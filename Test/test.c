@@ -1,5 +1,6 @@
 #include "test.h"
 #include "Log.h"
+#include "ThreadPool.h"
 
 
 typedef struct
@@ -69,6 +70,28 @@ VOID_T ListTst(VOID_T)
     
 }
 
+VOID_T mission(VOID_T *pArg)
+{
+    S32_T *pI = (S32_T *) pArg;
+    LOGI("arg = %d\r\n", *pI);
+}
+
+
+VOID_T ThreadPoolTst(VOID_T)
+{
+    static S32_T i = 0, iarr[100] = {0};
+    THREAD_POOL_ST *pTp = ThreadPoolCreate(100, 1024 * 3);
+
+    for(i = 0; i < 88; i++)
+    {
+        iarr[i] = i;
+        ThreadPoolDispatchMission(pTp, mission, &iarr[i]);
+    }
+    
+    ThreadPoolDestory(pTp);
+}
+
+
 int main(int argc, char **argv)
 {
     (VOID_T) argc;
@@ -100,6 +123,8 @@ int main(int argc, char **argv)
     }
 
     ListTst();
+
+    ThreadPoolTst();
     return 0;
 }
 

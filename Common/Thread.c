@@ -11,7 +11,7 @@
 __attribute__((weak)) SEM_T SemCreate(VOID_T)
 {
     SEM_T sem = NULL;
-    sem = MmMngrMalloc(sizeof(EVENT_T));
+    sem = MmMngrMalloc(sizeof(sem_t));
 
     if(sem && sem_init(sem, 0, 0))
     {

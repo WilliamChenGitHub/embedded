@@ -66,7 +66,7 @@ AR := $(CROSS)ar
 INC_PATH += -I Common
 INC_PATH += -I Algorithm/Sort 
 INC_PATH += -I DataStruct/List -I DataStruct/Queue -I DataStruct/Stack -I DataStruct/Tree -I DataStruct/Graph
-INC_PATH += -I Tools/Communication -I Tools/JSON
+INC_PATH += -I Tools/Communication -I Tools/JSON -I Tools/ThreadPool
 
 LIB_PATH += -L ./
 LIBS += -lc -lpthread
