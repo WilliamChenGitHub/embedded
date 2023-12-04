@@ -341,7 +341,7 @@
               <MiscControls></MiscControls>
               <Define>__LIBEMBEDDEDVER=0x100</Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\Algorithm\Sort;..\..\Common;..\..\DataStruct\List;..\..\DataStruct\Queue;..\..\Test;..\..\Tools\Communication;..\..\Tools\JSON;..\MDK_LPC1768</IncludePath>
+              <IncludePath>..\..\Algorithm\Sort;..\..\Common;..\..\DataStruct\List;..\..\DataStruct\Queue;..\..\Test;..\..\Tools\Communication;..\..\Tools\JSON;..\MDK_LPC1768;..\..\Tools\ThreadPool</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
