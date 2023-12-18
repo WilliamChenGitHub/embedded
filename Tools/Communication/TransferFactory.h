@@ -20,6 +20,10 @@ typedef struct __TransferFactoryVtbl
 }TRANSFER_FACTORY_VTBL_ST;
 
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 static inline TRANSFER_ST *TransferCreate(TRANSFER_FACTORY_ST *pTransFactory)
 {
     return pTransFactory->vPtr->pTransferCreate(pTransFactory);
@@ -31,6 +35,9 @@ static inline VOID_T TransferDestory(TRANSFER_ST *pTrans)
     MmMngrFree(pTrans);
 }
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 

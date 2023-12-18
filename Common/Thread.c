@@ -8,7 +8,7 @@
 #include <semaphore.h>
 #include <errno.h>
 
-__attribute__((weak)) SEM_T SemCreate(VOID_T)
+ATTRIBUTE_WEAK SEM_T SemCreate(VOID_T)
 {
     SEM_T sem = NULL;
     sem = MmMngrMalloc(sizeof(sem_t));
@@ -22,14 +22,14 @@ __attribute__((weak)) SEM_T SemCreate(VOID_T)
     return sem;
 }
 
-__attribute__((weak)) VOID_T SemDestroy(SEM_T sem)
+ATTRIBUTE_WEAK VOID_T SemDestroy(SEM_T sem)
 {
     sem_destroy(sem);
     MmMngrFree(sem);
 }
 
 
-__attribute__((weak)) S32_T SemTimedWait(SEM_T sem, S32_T toMs)
+ATTRIBUTE_WEAK S32_T SemTimedWait(SEM_T sem, S32_T toMs)
 {
     struct timespec ts;
     S32_T semWaitRet = 0;
@@ -68,7 +68,7 @@ __attribute__((weak)) S32_T SemTimedWait(SEM_T sem, S32_T toMs)
     return 0;
 }
 
-__attribute__((weak)) VOID_T SemPost(SEM_T sem)
+ATTRIBUTE_WEAK VOID_T SemPost(SEM_T sem)
 {
     sem_post(sem);
 }
@@ -81,7 +81,7 @@ typedef struct
     S32_T eventFlg;
 }EVENT_ATTR_ST;
 
-__attribute__((weak)) EVENT_T EventCreate(VOID_T)
+ATTRIBUTE_WEAK EVENT_T EventCreate(VOID_T)
 {
     EVENT_ATTR_ST *pEventAttr = MmMngrMalloc(sizeof(*pEventAttr));
 
@@ -115,7 +115,7 @@ err1:
     return NULL;
 }
 
-__attribute__((weak)) VOID_T EventDestroy(EVENT_T event)
+ATTRIBUTE_WEAK VOID_T EventDestroy(EVENT_T event)
 {
     EVENT_ATTR_ST *pEventAttr = (EVENT_ATTR_ST *)event;
 
@@ -124,7 +124,7 @@ __attribute__((weak)) VOID_T EventDestroy(EVENT_T event)
     MmMngrFree(pEventAttr);
 }
 
-__attribute__((weak)) VOID_T EventGeneration(EVENT_T event)
+ATTRIBUTE_WEAK VOID_T EventGeneration(EVENT_T event)
 {
     EVENT_ATTR_ST *pEventAttr = (EVENT_ATTR_ST *)event;
 
@@ -134,7 +134,7 @@ __attribute__((weak)) VOID_T EventGeneration(EVENT_T event)
     pthread_mutex_unlock(&pEventAttr->mutex);
 }
 
-__attribute__((weak)) S32_T EventTimedWait(EVENT_T event, S32_T toMs)
+ATTRIBUTE_WEAK S32_T EventTimedWait(EVENT_T event, S32_T toMs)
 {
     EVENT_ATTR_ST *pEventAttr = (EVENT_ATTR_ST *)event;
     struct timespec ts;
@@ -180,7 +180,7 @@ __attribute__((weak)) S32_T EventTimedWait(EVENT_T event, S32_T toMs)
 }
 
 
-__attribute__((weak)) MUTEX_T MutexCreate(VOID_T)
+ATTRIBUTE_WEAK MUTEX_T MutexCreate(VOID_T)
 {
     MUTEX_T mutex = MmMngrMalloc(sizeof(pthread_mutex_t));
     if(mutex && pthread_mutex_init(mutex, NULL))
@@ -192,18 +192,18 @@ __attribute__((weak)) MUTEX_T MutexCreate(VOID_T)
 }
 
 
-__attribute__((weak)) VOID_T MutexDestroy(MUTEX_T    mutex)
+ATTRIBUTE_WEAK VOID_T MutexDestroy(MUTEX_T    mutex)
 {
     pthread_mutex_destroy(mutex);
     MmMngrFree(mutex);
 }
 
-__attribute__((weak)) VOID_T MutexLock(MUTEX_T mutex)
+ATTRIBUTE_WEAK VOID_T MutexLock(MUTEX_T mutex)
 {
     pthread_mutex_lock(mutex);
 }
 
-__attribute__((weak)) VOID_T MutexUnlock(MUTEX_T mutex)
+ATTRIBUTE_WEAK VOID_T MutexUnlock(MUTEX_T mutex)
 {
     pthread_mutex_unlock(mutex);
 }
@@ -234,7 +234,7 @@ static VOID_T *ThreadFunc(VOID_T *argument)
     return NULL;
 }
 
-__attribute__((weak)) THREAD_T ThreadCreate(THREAD_FUNC_FT pFunc, VOID_T *pArg, U32_T stackSz, BOOL_T isDetached, U32_T priority, S8_T *name)
+ATTRIBUTE_WEAK THREAD_T ThreadCreate(THREAD_FUNC_FT pFunc, VOID_T *pArg, U32_T stackSz, BOOL_T isDetached, U32_T priority, S8_T *name)
 {
     THREAD_ATTR_LINUX_ST *pThreadAttr = MmMngrMalloc(sizeof(THREAD_ATTR_LINUX_ST));
     pthread_attr_t thAttr = {0};
@@ -286,21 +286,230 @@ __attribute__((weak)) THREAD_T ThreadCreate(THREAD_FUNC_FT pFunc, VOID_T *pArg, 
     return (THREAD_T)pThreadAttr;
 }
 
-__attribute__((weak)) VOID_T ThreadJoin(THREAD_T thread)
+ATTRIBUTE_WEAK VOID_T ThreadJoin(THREAD_T thread)
 {
     THREAD_ATTR_LINUX_ST *pThreadAttr = (THREAD_ATTR_LINUX_ST *)thread;
     pthread_join(pThreadAttr->threadId, NULL);
     MmMngrFree(thread);
 }
 
-__attribute__((weak)) VOID_T ThreadUsleep(U32_T us)
+ATTRIBUTE_WEAK VOID_T ThreadUsleep(U32_T us)
 {
     usleep(us);
 }
 
 
 #elif defined(_WIN32)  
+#include <Windows.h>
 
+ATTRIBUTE_WEAK SEM_T SemCreate(VOID_T)
+{
+    return CreateSemaphore(NULL, 0, 0x7FFFFFFF, NULL);
+}
+
+ATTRIBUTE_WEAK VOID_T SemDestroy(SEM_T sem)
+{
+    CloseHandle(sem);
+}
+
+
+ATTRIBUTE_WEAK S32_T SemTimedWait(SEM_T sem, S32_T toMs)
+{
+    S32_T semWaitRet = 0;
+
+    if (0 > toMs)
+    {
+        semWaitRet = WaitForSingleObject(sem, INFINITE);
+    }
+    else
+    {
+        semWaitRet = WaitForSingleObject(sem, toMs);
+    }
+
+
+    if (WAIT_TIMEOUT == semWaitRet)
+    {
+        return RESULT_ERR_TIME_OUT;
+    }
+    else if (WAIT_OBJECT_0 == semWaitRet)
+    {
+        return 0;
+    }
+    else
+    {
+        return semWaitRet;
+    }
+}
+
+ATTRIBUTE_WEAK VOID_T SemPost(SEM_T sem)
+{
+    ReleaseSemaphore(sem, 1, NULL);
+}
+
+
+ATTRIBUTE_WEAK EVENT_T EventCreate(VOID_T)
+{
+    HANDLE event;
+    event = CreateEvent(NULL, FALSE, FALSE, NULL);
+    //ResetEvent(&event);
+    return (EVENT_T)event;
+}
+
+ATTRIBUTE_WEAK VOID_T EventDestroy(EVENT_T event)
+{
+    CloseHandle(event);
+}
+
+ATTRIBUTE_WEAK VOID_T EventGeneration(EVENT_T event)
+{
+    SetEvent(event);
+}
+
+ATTRIBUTE_WEAK S32_T EventTimedWait(EVENT_T event, S32_T toMs)
+{
+    S32_T waitRet = 0;
+
+    if (0 > toMs)
+    {
+        waitRet = WaitForSingleObject(event, INFINITE);
+    }
+    else
+    {
+        waitRet = WaitForSingleObject(event, toMs);
+    }
+
+    if (WAIT_TIMEOUT == waitRet)
+    {
+        return RESULT_ERR_TIME_OUT;
+    }
+    else if (WAIT_OBJECT_0 == waitRet)
+    {
+        //ResetEvent(event);
+        return 0;
+    }
+    else
+    {
+        return waitRet;
+    }
+}
+
+
+ATTRIBUTE_WEAK MUTEX_T MutexCreate(VOID_T)
+{
+    MUTEX_T mutex = MmMngrMalloc(sizeof(CRITICAL_SECTION));
+
+    if(mutex)
+    {
+        InitializeCriticalSection(mutex);
+    }
+
+    return mutex;
+}
+
+
+ATTRIBUTE_WEAK VOID_T MutexDestroy(MUTEX_T    mutex)
+{
+    DeleteCriticalSection(mutex);
+}
+
+ATTRIBUTE_WEAK VOID_T MutexLock(MUTEX_T mutex)
+{
+    EnterCriticalSection(mutex);
+}
+
+ATTRIBUTE_WEAK VOID_T MutexUnlock(MUTEX_T mutex)
+{
+    LeaveCriticalSection(mutex);
+}
+
+
+typedef struct
+{
+    HANDLE hThread;
+    DWORD iThread;
+    THREAD_FUNC_FT pFunc;
+    S8_T name[24];
+    BOOL_T isDetached;
+    VOID_T* pUsrData;
+}THREAD_ATTR_WINDOWS_ST;
+
+
+static DWORD WINAPI ThreadFunc(LPVOID argument)
+{
+    THREAD_ATTR_WINDOWS_ST* pThreadAttr = (THREAD_ATTR_WINDOWS_ST*)argument;
+
+    pThreadAttr->pFunc(pThreadAttr->pUsrData);
+
+    if(pThreadAttr->isDetached)
+    {
+        MmMngrFree(pThreadAttr);
+    }
+    
+    ExitThread(0);
+}
+
+ATTRIBUTE_WEAK THREAD_T ThreadCreate(THREAD_FUNC_FT pFunc, VOID_T* pArg, U32_T stackSz, BOOL_T isDetached, U32_T priority, S8_T* name)
+{
+    THREAD_ATTR_WINDOWS_ST* pThreadAttr = NULL;
+
+    (VOID_T) priority;
+
+    pThreadAttr = MmMngrMalloc(sizeof(THREAD_ATTR_WINDOWS_ST));
+
+    if (!pThreadAttr)
+    {
+        goto err1;
+    }
+    
+    if (name)
+    {
+        snprintf(pThreadAttr->name, sizeof pThreadAttr->name, "%s", name);
+    }
+
+    pThreadAttr->pUsrData = pArg;
+    pThreadAttr->pFunc = pFunc;
+    pThreadAttr->isDetached = isDetached;
+
+    pThreadAttr->hThread = CreateThread(NULL, stackSz, ThreadFunc, pThreadAttr, 0, &pThreadAttr->iThread);
+
+    if (!pThreadAttr->hThread)
+    {
+        goto err2;
+    }
+
+    //SetThreadPriority(pThreadAttr->hThread, THREAD_PRIORITY_TIME_CRITICAL + priority);
+    if(isDetached)
+    {
+        CloseHandle(pThreadAttr->hThread); // detached
+    }
+
+    return (THREAD_T)pThreadAttr;
+
+err2:
+    MmMngrFree(pThreadAttr);
+
+err1:
+    return NULL;
+}
+
+ATTRIBUTE_WEAK VOID_T ThreadJoin(THREAD_T thread)
+{
+    THREAD_ATTR_WINDOWS_ST* pThreadAttr = (THREAD_ATTR_WINDOWS_ST*)thread;
+    WaitForSingleObject(pThreadAttr->hThread, INFINITE);
+    CloseHandle(pThreadAttr->hThread);
+    MmMngrFree(thread);
+}
+
+ATTRIBUTE_WEAK VOID_T ThreadUsleep(U32_T us)
+{
+    Sleep(us / 1000);
+}
+
+ATTRIBUTE_WEAK VOID_T ThreadPostMsg(THREAD_T thread, U32_T msg)
+{
+    THREAD_ATTR_WINDOWS_ST* pThreadAttr = (THREAD_ATTR_WINDOWS_ST*)thread;
+    PostThreadMessage(pThreadAttr->iThread, msg, 0, 0);
+}
 
 
 #elif defined(__APPLE__)
@@ -317,25 +526,25 @@ typedef struct
     S32_T sem;
 }SEM_ATTR_T;
 
-__attribute__((weak)) SEM_T SemCreate(VOID_T)
+ATTRIBUTE_WEAK SEM_T SemCreate(VOID_T)
 {
 
     return NULL;
 }
 
-__attribute__((weak)) VOID_T SemDestroy(SEM_T sem)
+ATTRIBUTE_WEAK VOID_T SemDestroy(SEM_T sem)
 {
     (VOID_T) sem;
 }
 
-__attribute__((weak)) S32_T SemTimedWait(SEM_T sem, S32_T toMs)
+ATTRIBUTE_WEAK S32_T SemTimedWait(SEM_T sem, S32_T toMs)
 {
     (VOID_T) sem;
     (VOID_T) toMs;
     return 0;
 }
 
-__attribute__((weak)) VOID_T SemPost(SEM_T sem)
+ATTRIBUTE_WEAK VOID_T SemPost(SEM_T sem)
 {
     (VOID_T) sem;
 }
@@ -343,7 +552,7 @@ __attribute__((weak)) VOID_T SemPost(SEM_T sem)
 
 #define EVT_DEFT 0x00000001
 
-__attribute__((weak)) EVENT_T EventCreate(VOID_T)
+ATTRIBUTE_WEAK EVENT_T EventCreate(VOID_T)
 {
     osEventFlagsId_t event = NULL;
 
@@ -352,17 +561,17 @@ __attribute__((weak)) EVENT_T EventCreate(VOID_T)
     return (EVENT_T)event;
 }
 
-__attribute__((weak)) VOID_T EventDestroy(EVENT_T event)
+ATTRIBUTE_WEAK VOID_T EventDestroy(EVENT_T event)
 {
     osEventFlagsDelete((osEventFlagsId_t *)event);
 }
 
-__attribute__((weak)) VOID_T EventGeneration(EVENT_T event)
+ATTRIBUTE_WEAK VOID_T EventGeneration(EVENT_T event)
 {
     osEventFlagsSet((osEventFlagsId_t *)event, EVT_DEFT);
 }
 
-__attribute__((weak)) S32_T EventTimedWait(EVENT_T event, S32_T toMs)
+ATTRIBUTE_WEAK S32_T EventTimedWait(EVENT_T event, S32_T toMs)
 {
     S32_T ret = 0;
 
@@ -390,7 +599,7 @@ __attribute__((weak)) S32_T EventTimedWait(EVENT_T event, S32_T toMs)
 }
 
 
-__attribute__((weak)) MUTEX_T MutexCreate(VOID_T)
+ATTRIBUTE_WEAK MUTEX_T MutexCreate(VOID_T)
 {
     osMutexId_t mutex = NULL;
 
@@ -400,17 +609,17 @@ __attribute__((weak)) MUTEX_T MutexCreate(VOID_T)
 }
 
 
-__attribute__((weak)) VOID_T MutexDestroy(MUTEX_T    mutex)
+ATTRIBUTE_WEAK VOID_T MutexDestroy(MUTEX_T    mutex)
 {
     osMutexDelete((osMutexId_t *)mutex);
 }
 
-__attribute__((weak)) VOID_T MutexLock(MUTEX_T mutex)
+ATTRIBUTE_WEAK VOID_T MutexLock(MUTEX_T mutex)
 {
     osMutexAcquire((osMutexId_t *)mutex, osWaitForever);
 }
 
-__attribute__((weak)) VOID_T MutexUnlock(MUTEX_T mutex)
+ATTRIBUTE_WEAK VOID_T MutexUnlock(MUTEX_T mutex)
 {
     osMutexRelease((osMutexId_t *)mutex);
 }
@@ -438,7 +647,7 @@ static VOID_T ThreadFunc(VOID_T *argument)
     osThreadExit();
 }
 
-__attribute__((weak)) THREAD_T ThreadCreate(THREAD_FUNC_FT pFunc, VOID_T *pArg, U32_T stackSz, BOOL_T isDetached, U32_T priority, S8_T *name)
+ATTRIBUTE_WEAK THREAD_T ThreadCreate(THREAD_FUNC_FT pFunc, VOID_T *pArg, U32_T stackSz, BOOL_T isDetached, U32_T priority, S8_T *name)
 {
     THREAD_ATTR_RTOS_ST *pThread = MmMngrMalloc(sizeof(THREAD_ATTR_RTOS_ST));
     osThreadAttr_t threadAttr = {0};
@@ -471,7 +680,7 @@ __attribute__((weak)) THREAD_T ThreadCreate(THREAD_FUNC_FT pFunc, VOID_T *pArg, 
     return (THREAD_T)pThread;
 }
 
-__attribute__((weak)) VOID_T ThreadJoin(THREAD_T thread)
+ATTRIBUTE_WEAK VOID_T ThreadJoin(THREAD_T thread)
 {
     THREAD_ATTR_RTOS_ST *pThread = (THREAD_ATTR_RTOS_ST *) thread;
 
@@ -479,7 +688,7 @@ __attribute__((weak)) VOID_T ThreadJoin(THREAD_T thread)
     MmMngrFree(thread);
 }
 
-__attribute__((weak)) VOID_T ThreadUsleep(U32_T us)
+ATTRIBUTE_WEAK VOID_T ThreadUsleep(U32_T us)
 {
     osDelay((us + 999) / 1000);
 }

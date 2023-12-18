@@ -4,7 +4,7 @@
 
 
 #ifndef __LIBEMBEDDEDVER
-#warning "version is not define use the default version 0xFFFF"
+#pragma message ("version is not define use the default version 0xFFFF")
 #define __LIBEMBEDDEDVER (0xFFFF)
 #endif
 
@@ -18,7 +18,7 @@ U16_T GetLibEmbeddedBCDVer(VOID_T)
 #include <sys/time.h>
 #include <time.h>
 
-__attribute__((weak)) U64_T GetRealTickNs(VOID_T)
+ATTRIBUTE_WEAK U64_T GetRealTickNs(VOID_T)
 {
     struct timespec ts;
     U64_T ns = 0;
@@ -30,7 +30,7 @@ __attribute__((weak)) U64_T GetRealTickNs(VOID_T)
     return ns;
 }
 
-__attribute__((weak)) U64_T GetMonotonicTickNs(VOID_T)
+ATTRIBUTE_WEAK U64_T GetMonotonicTickNs(VOID_T)
 {
     struct timespec ts;
     U64_T ns = 0;
@@ -43,20 +43,60 @@ __attribute__((weak)) U64_T GetMonotonicTickNs(VOID_T)
 }
 
 #elif defined(_WIN32)
+#include <Windows.h>
 
+ATTRIBUTE_WEAK U64_T GetRealTickNs(VOID_T)
+{
+    U64_T ns = 0;
+    FILETIME ft;
+    ULARGE_INTEGER ull;
 
+    GetSystemTimeAsFileTime(&ft);
+
+    ull.LowPart = ft.dwLowDateTime;
+    ull.HighPart = ft.dwHighDateTime;
+
+    // Windows time stamp interval is 100ns, from 1601-1-1
+    const U64_T EPOCH = 116444736000000000ULL;
+    ns = (ull.QuadPart - EPOCH) * 10; // convert to ns
+    
+    return ns;
+}
+
+ATTRIBUTE_WEAK U64_T GetMonotonicTickNs(VOID_T)
+{
+    static S32_T first = 1;
+    static LARGE_INTEGER frequency;
+    static U64_T ns = 0;
+    LARGE_INTEGER count;
+    
+
+    if (first)
+    {
+        if (!QueryPerformanceFrequency(&frequency))
+        {
+            return 0;
+        }
+        first = 0;
+        ns = 1000000000 / frequency.QuadPart;
+    }
+
+    QueryPerformanceCounter(&count);
+
+    return count.QuadPart* ns;
+}
 
 #elif defined(__APPLE__)
 
 
 #else
 //rtos
-__attribute__((weak)) U64_T GetRealTickNs(VOID_T)
+ATTRIBUTE_WEAK U64_T GetRealTickNs(VOID_T)
 {
     return 0;
 }
 
-__attribute__((weak)) U64_T GetMonotonicTickNs(VOID_T)
+ATTRIBUTE_WEAK U64_T GetMonotonicTickNs(VOID_T)
 {
     U64_T ns = 0;
 

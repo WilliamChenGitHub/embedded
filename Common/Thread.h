@@ -62,6 +62,8 @@ VOID_T ThreadJoin(THREAD_T thread);
 
 VOID_T ThreadUsleep(U32_T us);
 
+VOID_T ThreadPostMsg(THREAD_T thread, U32_T msg);
+
 
 
 #ifdef __cplusplus

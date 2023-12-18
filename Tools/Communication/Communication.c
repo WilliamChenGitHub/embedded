@@ -22,7 +22,14 @@ static S8_T *gPackTypeName[] =
 
 static inline S8_T *GetPackTypeName(COM_PACK_ET packType)
 {
-    return packType > PACKTP_END ? "PACKTP_UNKNOW" : gPackTypeName[packType];
+    if (PACKTP_END > packType && 0 < packType)
+    {
+        return gPackTypeName[packType];
+    }
+    else
+    {
+        return NULL;
+    }
 }
 
 // data must be 4 byte alignment
@@ -71,8 +78,7 @@ static VOID_T ClrCommunicationBuf(COM_ATTR_ST *pCom)
     TransferClrBuf(pCom->pTransfer);
 }
 
-
-__attribute__((unused)) static inline COM_WAIT_PACK_ATTR_ST *GetWaitPackFromHead(COM_ATTR_ST *pCom, U32_T waitPackId)
+static inline COM_WAIT_PACK_ATTR_ST *GetWaitPackFromHead(COM_ATTR_ST *pCom, U32_T waitPackId)
 {
     COM_WAIT_PACK_ATTR_ST *pWaitPack = NULL, *pRet = NULL;
 
@@ -111,7 +117,7 @@ static inline COM_WAIT_PACK_ATTR_ST *GetWaitPackFromTail(COM_ATTR_ST *pCom, U32_
 
 }
 
-static inline S32_T AddWaitPack(COM_ATTR_ST *pCom, U32_T waitPackId, VOID_T *rcvBuf, U32_T bufLen, EVENT_T event, COM_RESULT_ST *pResult)
+static inline S32_T AddWaitPack(COM_ATTR_ST *pCom, U32_T waitPackId, VOID_T *rcvBuf, U16_T bufLen, EVENT_T event, COM_RESULT_ST *pResult)
 {
     COM_WAIT_PACK_ATTR_ST *pWaitPack = MmMngrMalloc(sizeof(*pWaitPack));
     
@@ -175,7 +181,7 @@ static inline COM_RESULT_ST PackTransaction(COM_ATTR_ST *pCom, U8_T method, U8_T
     COM_RESULT_ST result = {.comRet = COM_RET_NONE};
     TRANSFER_BUF_ST bufList[3] = {0};
     S32_T comRet = COM_RET_SUCCESS;
-    EVENT_T eventWait;
+    EVENT_T eventWait = NULL;
 
     COM_PACK_ST packHead = {0};
     U32_T packCnt = 0;
@@ -350,7 +356,7 @@ static inline COM_RESULT_ST SendAckPack(COM_ATTR_ST *pCom, U32_T ackNb, VOID_T *
     return CommunicationTxPack(pCom, 0, ackNb, PACKTP_ACK, FALSE, 0, 0, 0, pDat, dLen);
 }
 
-static inline COM_RESULT_ST SendPingRes(COM_ATTR_ST *pCom, U32_T ackNb, U8_T *pDat, U32_T pingDlen)
+static inline COM_RESULT_ST SendPingRes(COM_ATTR_ST *pCom, U32_T ackNb, U8_T *pDat, U16_T pingDlen)
 {
     return CommunicationTxPack(pCom, 0, ackNb, PACKTP_PING_RES, FALSE, 0, 0, 0, pDat, pingDlen);
 }
@@ -853,7 +859,7 @@ COM_RESULT_ST CommunicationGetPack(COM_ATTR_ST *pCom, U8_T port, U8_T packType, 
 }
 
 //note: pingDlen must be mutiple of 4
-COM_RESULT_ST CommunicationPing(COM_ATTR_ST *pCom, U32_T pingDlen, U64_T *pDtNs) // ping test
+COM_RESULT_ST CommunicationPing(COM_ATTR_ST *pCom, U16_T pingDlen, U64_T *pDtNs) // ping test
 {
     U64_T t1 = 0;
     t1 = GetMonotonicTickNs();
@@ -861,9 +867,9 @@ COM_RESULT_ST CommunicationPing(COM_ATTR_ST *pCom, U32_T pingDlen, U64_T *pDtNs)
     U8_T rxBuf[MAX_PACK_DAT_SZ] = {0};
     COM_RESULT_ST result = {.comRet = COM_RET_NONE};
 
-    for(U32_T i = 0; i < pingDlen; i++)
+    for(U16_T i = 0; i < pingDlen; i++)
     {
-        txBuf[i] = i;
+        txBuf[i] = (U8_T)i;
     }
 
     result = CommunicationGetPack(pCom, 0, PACKTP_PING_REQ, 1000, 0, 0, txBuf, pingDlen, rxBuf, pingDlen);
@@ -883,7 +889,7 @@ COM_RESULT_ST CommunicationPing(COM_ATTR_ST *pCom, U32_T pingDlen, U64_T *pDtNs)
 
 
 //note: packLen must be mutiple of 4
-S32_T CommunicationTxThroughput(COM_ATTR_ST *pCom, U32_T txSz, U32_T packLen)// test send throughput 
+S32_T CommunicationTxThroughput(COM_ATTR_ST *pCom, U32_T txSz, U16_T packLen)// test send throughput 
 {
     U8_T dataBuf[MAX_PACK_DAT_SZ] = {0};
     S32_T sendCnt = txSz / packLen, txBdw = 0;
@@ -925,7 +931,7 @@ S32_T CommunicationTxThroughput(COM_ATTR_ST *pCom, U32_T txSz, U32_T packLen)// 
 
 
 //note: packLen must be mutiple of 4
-S32_T CommunicationTimedTxThp(COM_ATTR_ST *pCom, U64_T durationMs, U32_T packLen)// test send throughput 
+S32_T CommunicationTimedTxThp(COM_ATTR_ST *pCom, U64_T durationMs, U16_T packLen)// test send throughput 
 {
     U8_T dataBuf[MAX_PACK_DAT_SZ] = {0};
     S32_T txBdw = 0;
@@ -957,7 +963,7 @@ S32_T CommunicationTimedTxThp(COM_ATTR_ST *pCom, U64_T durationMs, U32_T packLen
 
 
 //note: packLen must be mutiple of 4
-S32_T CommunicationRxThroughput(COM_ATTR_ST *pCom, U32_T rxSz, U32_T packLen)// test receive throughput 
+S32_T CommunicationRxThroughput(COM_ATTR_ST *pCom, U32_T rxSz, U16_T packLen)// test receive throughput 
 {
     if(packLen > MAX_PACK_DAT_SZ)
     {

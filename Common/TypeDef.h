@@ -29,13 +29,11 @@ typedef bool                BOOL_T;
 #define FALSE               false
 #endif
 
-#define ST_OFFSET_OF(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)
+#define ST_OFFSET_OF(TYPE, MEMBER) ((U64_T) &((TYPE *)0)->MEMBER)
 
 #define ST_CONTAINER_OF(ptr, type, member) \
-({\
-    typeof( ((type *)0)->member ) *__mptr = (ptr);\
-    (type *)( (S8_T *)__mptr - ST_OFFSET_OF(type,member) );\
-})
+((type*)((U64_T)(ptr) - ST_OFFSET_OF(type, member)))
+
 
 #ifndef __WORDSIZE
 #define __WORDSIZE (64)
@@ -44,3 +42,18 @@ typedef bool                BOOL_T;
 #endif
 
 
+#if defined(__unix__) || defined(__linux__)
+
+#define ATTRIBUTE_WEAK __attribute__((weak))
+
+#elif defined(_WIN32)  
+#define ATTRIBUTE_WEAK 
+#pragma warning(disable  : 4996)
+
+#elif defined(__APPLE__)
+
+
+#else
+#define ATTRIBUTE_WEAK __attribute__((weak))
+
+#endif

@@ -27,6 +27,10 @@ typedef enum
 }LOG_LEVEL_ET;
 
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 VOID_T LOGPrintf(LOG_LEVEL_ET lvl, S8_T *pFormat, ...);
 
 #define PRINTF(lvl, format, ...) LOGPrintf(lvl, format, ##__VA_ARGS__)

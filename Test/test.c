@@ -125,6 +125,8 @@ int main(int argc, char **argv)
     ListTst();
 
     ThreadPoolTst();
+
+    getchar();
     return 0;
 }
 

@@ -1,0 +1,123 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Algorithm">
+      <UniqueIdentifier>{31f855da-5285-4bc8-93dc-85ece16d3238}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Common">
+      <UniqueIdentifier>{b2fe58b8-2229-4e1a-9b19-09c386bb74b6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="DataStruct">
+      <UniqueIdentifier>{d7ce60a1-aff6-4955-bcff-8505d7707716}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Tools">
+      <UniqueIdentifier>{d8c85c0b-eb1a-4b91-9aa0-8b54cbd15f69}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Test">
+      <UniqueIdentifier>{337bcad6-d542-4090-8533-da78a302fa11}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\Algorithm\Sort\Sort.c">
+      <Filter>Algorithm</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Common\Log.c">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Common\Miscellaneous.c">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Common\MmMngr.c">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Common\Thread.c">
+      <Filter>Common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\DataStruct\Graph\Graph.c">
+      <Filter>DataStruct</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\DataStruct\List\List.c">
+      <Filter>DataStruct</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\DataStruct\Queue\Queue.c">
+      <Filter>DataStruct</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\DataStruct\Stack\Stack.c">
+      <Filter>DataStruct</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\DataStruct\Tree\Tree.c">
+      <Filter>DataStruct</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Test\test.c">
+      <Filter>Test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Tools\Communication\Communication.c">
+      <Filter>Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Tools\Communication\Transfer.c">
+      <Filter>Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Tools\Communication\TransferFactory.c">
+      <Filter>Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Tools\JSON\JSON.c">
+      <Filter>Tools</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Tools\ThreadPool\ThreadPool.c">
+      <Filter>Tools</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\Algorithm\Sort\Sort.h">
+      <Filter>Algorithm</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Common\Log.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Common\Miscellaneous.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Common\MmMngr.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Common\Thread.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Common\TypeDef.h">
+      <Filter>Common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\DataStruct\Graph\Graph.h">
+      <Filter>DataStruct</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\DataStruct\List\List.h">
+      <Filter>DataStruct</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\DataStruct\Queue\Queue.h">
+      <Filter>DataStruct</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\DataStruct\Stack\Stack.h">
+      <Filter>DataStruct</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\DataStruct\Tree\Tree.h">
+      <Filter>DataStruct</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Test\test.h">
+      <Filter>Test</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Tools\Communication\Communication.h">
+      <Filter>Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Tools\Communication\Transfer.h">
+      <Filter>Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Tools\Communication\TransferFactory.h">
+      <Filter>Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Tools\JSON\JSON.h">
+      <Filter>Tools</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Tools\ThreadPool\ThreadPool.h">
+      <Filter>Tools</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

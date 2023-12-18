@@ -237,6 +237,13 @@ typedef struct __comPack// total len must be mutiple of 4
 #define H2COM16(x) COM2H(x, 16)
 
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
+#define GET_SYS_TICK_US()       (GetMonotonicTickNs() / 1000)
+#define COM_GET_TICK_US(pCom)   (GET_SYS_TICK_US() + (pCom->timeOffset))
+
 
 COM_ATTR_ST *CommunicationInit(TRANSFER_FACTORY_ST *pTransferFactory, BOOL_T isMaster);
 
@@ -254,23 +261,23 @@ COM_RESULT_ST CommunicationGetPack(COM_ATTR_ST * pCom, U8_T port, U8_T packType,
 
 
 //note: pingDlen must be mutiple of 4
-COM_RESULT_ST CommunicationPing(COM_ATTR_ST *pCom, U32_T pingDlen, U64_T *pDtNs); // ping test
+COM_RESULT_ST CommunicationPing(COM_ATTR_ST *pCom, U16_T pingDlen, U64_T *pDtNs); // ping test
 
 //note: packLen must be mutiple of 4
-S32_T CommunicationTxThroughput(COM_ATTR_ST *pCom, U32_T txSz, U32_T packLen);
-S32_T CommunicationTimedTxThp(COM_ATTR_ST *pCom, U64_T durationMs, U32_T packLen);// test send throughput 
+S32_T CommunicationTxThroughput(COM_ATTR_ST *pCom, U32_T txSz, U16_T packLen);
+S32_T CommunicationTimedTxThp(COM_ATTR_ST *pCom, U64_T durationMs, U16_T packLen);// test send throughput 
 
 //note: packLen must be mutiple of 4
-S32_T CommunicationRxThroughput(COM_ATTR_ST *pCom, U32_T rxSz, U32_T packLen);
+S32_T CommunicationRxThroughput(COM_ATTR_ST *pCom, U32_T rxSz, U16_T packLen);
 
 S32_T CommunicationReset(COM_ATTR_ST *pCom);
 
-
-#define GET_SYS_TICK_US()       (GetMonotonicTickNs() / 1000)
-#define COM_GET_TICK_US(pCom)   (GET_SYS_TICK_US() + (pCom->timeOffset))
-
-
 S32_T CommunicaitonStartTimeSync(COM_ATTR_ST *pCom);
+
+#ifdef __cplusplus
+}
+#endif
+
 
 #endif
 

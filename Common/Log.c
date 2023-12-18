@@ -76,7 +76,7 @@ VOID_T LOGPrintf(  LOG_LEVEL_ET lvl, S8_T *pFormat, ...)
     va_start(valist, pFormat);
     vsnprintf(buf, sizeof buf, pFormat, valist);
     va_end(valist);
-    gPLogAttr->pVptr->pPutS(gPLogAttr, buf, strlen(buf));
+    gPLogAttr->pVptr->pPutS(gPLogAttr, buf, (S32_T)strlen(buf));
 }
 
 

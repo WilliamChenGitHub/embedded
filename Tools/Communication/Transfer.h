@@ -40,6 +40,10 @@ typedef struct __transferVtbl
     TRANSFER_OP_FT pTransferDeinit;
 }TRANSFER_VTBL_ST;
 
+#ifdef __cplusplus
+extern "C"{
+#endif
+
 
 static inline S32_T TransferTx(TRANSFER_ST *pTrans, TRANSFER_BUF_ST *pBuf, S32_T totalLen)
 {
@@ -92,6 +96,9 @@ VOID_T TransferClrBufferDef(TRANSFER_ST *pTrans);
 S32_T TransferInit(TRANSFER_ST *pTrans, S32_T rxBufSz, S32_T txBufSz);
 VOID_T TransferPrepareDeinit(TRANSFER_ST *pTrans);
 
+#ifdef __cplusplus
+}
+#endif
 
 #endif
 
