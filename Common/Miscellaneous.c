@@ -4,8 +4,8 @@
 
 
 #ifndef __LIBEMBEDDEDVER
-#pragma message ("version is not define use the default version 0xFFFF")
-#define __LIBEMBEDDEDVER (0xFFFF)
+#pragma message ("version is not define use the default version define")
+#define __LIBEMBEDDEDVER (0x100)
 #endif
 
 U16_T GetLibEmbeddedBCDVer(VOID_T)
