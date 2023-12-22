@@ -339,7 +339,7 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls></MiscControls>
-              <Define>__LIBEMBEDDEDVER=0x100</Define>
+              <Define></Define>
               <Undefine></Undefine>
               <IncludePath>..\..\Algorithm\Sort;..\..\Common;..\..\DataStruct\List;..\..\DataStruct\Queue;..\..\Test;..\..\Tools\Communication;..\..\Tools\JSON;..\MDK_LPC1768;..\..\Tools\ThreadPool</IncludePath>
             </VariousControls>
