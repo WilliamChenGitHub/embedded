@@ -3,7 +3,7 @@
 
 
 #include "stdbool.h"
-
+#include "stdint.h"
 
 typedef unsigned char       U8_T;
 typedef char                S8_T;
@@ -20,6 +20,10 @@ typedef long long           S64_T;
 
 typedef void                VOID_T;
 typedef bool                BOOL_T;
+
+
+typedef int32_t SOCKET_T;
+
 
 #ifndef TRUE
 #define TRUE                true

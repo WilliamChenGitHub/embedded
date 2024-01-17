@@ -245,7 +245,7 @@ extern "C"{
 #define COM_GET_TICK_US(pCom)   (GET_SYS_TICK_US() + (pCom->timeOffset))
 
 
-COM_ATTR_ST *CommunicationInit(TRANSFER_FACTORY_ST *pTransferFactory, BOOL_T isMaster);
+COM_ATTR_ST *CommunicationInit(TRANSFER_FACTORY_ST *pTransferFactory, BOOL_T isMaster, BOOL_T createTh2Parse);
 
 VOID_T CommunicationDeinit(COM_ATTR_ST *pCom);
 
@@ -273,6 +273,13 @@ S32_T CommunicationRxThroughput(COM_ATTR_ST *pCom, U32_T rxSz, U16_T packLen);
 S32_T CommunicationReset(COM_ATTR_ST *pCom);
 
 S32_T CommunicaitonStartTimeSync(COM_ATTR_ST *pCom);
+
+VOID_T CommunicationTryParse(COM_ATTR_ST *pCom);
+
+
+S32_T ComPortRetPack(COM_PORT_ATTR_ST *pComPort, U16_T packId, U32_T ackNb, VOID_T *pDat, U16_T dLen);
+S32_T ComPortSndPack(COM_PORT_ATTR_ST *pComPort, U16_T packId, BOOL_T isNeedAck, U32_T wTMs, U8_T retryCnt, VOID_T *pDat, U16_T dLen);
+S32_T ComPortGetPack(COM_PORT_ATTR_ST *pComPort, U16_T packId, U32_T wTMs, U8_T retryCnt, VOID_T *pTxDat, U16_T tLen, VOID_T *pBuf, U16_T bLen);
 
 #ifdef __cplusplus
 }

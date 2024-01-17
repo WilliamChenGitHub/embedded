@@ -5,7 +5,7 @@
 #include "List.h"
 
 #define MAX_WAITING_MISSIONS   1024 // number of waiting missions max value
-#define MAX_ACTIVE_THREADS    100 // The number of threads that can run simultaneously
+#define MAX_ACTIVE_THREADS    1000 // The number of threads that can run simultaneously
 
 
 typedef VOID_T (*THREAD_POOL_MISSION)(VOID_T *pArg);

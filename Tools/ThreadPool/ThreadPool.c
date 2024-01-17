@@ -15,7 +15,7 @@ static VOID_T *threadCb(VOID_T *pArg)
 
         if((0 == pPool->wMissions) && pPool->exit)
         {
-            return NULL; // exit
+            break;// exit
         }
 
         MutexLock(pPool->mutex);
@@ -36,6 +36,7 @@ static VOID_T *threadCb(VOID_T *pArg)
         pPool->rMissions--;
         MmMngrFree(pMission);
     }
+
     return NULL;
 }
 
@@ -106,7 +107,7 @@ err5:
         ThreadJoin(pPool->pTidArr[i]); // destory all thread
     }
 
-    EventDestroy(pPool->sem);
+    SemDestroy(pPool->sem);
 
 err4:
     MutexDestroy(pPool->mutex);
@@ -144,6 +145,9 @@ S32_T ThreadPoolDispatchMission(THREAD_POOL_ST *pPool, THREAD_POOL_MISSION pMiss
     MutexUnlock(pPool->mutex);
 
     SemPost(pPool->sem); // dispatch mission
+
+    return 0;
+    
 err1:
     return -1;
 }
@@ -160,6 +164,19 @@ VOID_T ThreadPoolDestory(THREAD_POOL_ST *pPool)
     {
         ThreadJoin(pPool->pTidArr[i]);
     }
+
+#if 0
+    // destory all mission
+    MISSION_ATTR_ST *pMission = NULL, *pNext = NULL;
+    MutexLock(pPool->mutex);
+    LIST_FOREACH_FROM_HEAD_SAFE(pMission, &pPool->missionList, pNext)
+    {
+        LIST_DELETE(pMission);
+        MmMngrFree(pMission);
+        LOGI("p%x\r\n", pMission);
+    }
+    MutexUnlock(pPool->mutex);
+#endif
 
     MmMngrFree(pPool->pTidArr);
     pPool->nbOfThreads = 0;

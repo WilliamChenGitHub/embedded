@@ -22,13 +22,13 @@ static S8_T *gPackTypeName[] =
 
 static inline S8_T *GetPackTypeName(COM_PACK_ET packType)
 {
-    if (PACKTP_END > packType && 0 < packType)
+    if (PACKTP_END > packType && 0 <= packType)
     {
         return gPackTypeName[packType];
     }
     else
     {
-        return NULL;
+        return "Unknow";
     }
 }
 
@@ -316,7 +316,7 @@ S32_T CommunicationReset(COM_ATTR_ST *pCom)
 {
     S32_T cnt = 0;
 
-    COM_RESULT_ST ret = CommunicationTxPack(pCom, 0, 0, PACKTP_HELLO, TRUE, 100, 0, 0, NULL, 0); // Is communication well?
+    COM_RESULT_ST ret = CommunicationTxPack(pCom, 0, 0, PACKTP_HELLO, TRUE, 1000, 0, 0, NULL, 0); // Is communication well?
 
     if(COM_RET_SUCCESS != ret.comRet) // if failed to do reset programa
     {
@@ -329,7 +329,7 @@ S32_T CommunicationReset(COM_ATTR_ST *pCom)
         }
         ThreadUsleep(1000 * 10);
 
-        CommunicationTxPack(pCom, 0, 0, PACKTP_STOP_SEND, TRUE, 500, 3, 0, NULL, 0); // stop device send message
+        CommunicationTxPack(pCom, 0, 0, PACKTP_STOP_SEND, TRUE, 1000, 3, 0, NULL, 0); // stop device send message
         CommunicationTxPack(pCom, 0, 0, PACKTP_RESET, FALSE, 0, 0, 0, NULL, 0);// repeat send ensure that clear device buffer is successful
         CommunicationTxPack(pCom, 0, 0, PACKTP_RESET, FALSE, 0, 0, 0, NULL, 0);// repeat send ensure that clear device buffer is successful
 
@@ -340,8 +340,8 @@ S32_T CommunicationReset(COM_ATTR_ST *pCom)
         }
         ThreadUsleep(1000 * 10);
 
-        CommunicationTxPack(pCom, 0, 0, PACKTP_CONTINUE_SEND, TRUE, 300, 3, 0, NULL, 0); // start device send message
-        ret = CommunicationTxPack(pCom, 0, 0, PACKTP_HELLO, TRUE, 300, 3, 0, NULL, 0); //Is communication well?
+        CommunicationTxPack(pCom, 0, 0, PACKTP_CONTINUE_SEND, TRUE, 1000, 3, 0, NULL, 0); // start device send message
+        ret = CommunicationTxPack(pCom, 0, 0, PACKTP_HELLO, TRUE, 1000, 3, 0, NULL, 0); //Is communication well?
         return ret.comRet;
     }
     else
@@ -658,7 +658,7 @@ static VOID_T *CommunicationProcThread(VOID_T *argument)
                 }
             }break;
         }
-        LOGD("%s\r\n", GetPackTypeName(OPTION_PACKTP(pPack->option)));
+        LOGD("%s, %d\r\n", GetPackTypeName(OPTION_PACKTP(pPack->option)), OPTION_PACKTP(pPack->option));
     }
     while(!pCom->exit);
 
@@ -666,8 +666,7 @@ static VOID_T *CommunicationProcThread(VOID_T *argument)
 }
 
 
-
-COM_ATTR_ST *CommunicationInit(TRANSFER_FACTORY_ST *pTransferFactory, BOOL_T isMaster)
+COM_ATTR_ST *CommunicationInit(TRANSFER_FACTORY_ST *pTransferFactory, BOOL_T isMaster, BOOL_T createTh2Parse)
 {
     COM_ATTR_ST *pCom = NULL;
     TRANSFER_ST *pTransfer = NULL;
@@ -715,12 +714,15 @@ COM_ATTR_ST *CommunicationInit(TRANSFER_FACTORY_ST *pTransferFactory, BOOL_T isM
         goto err5;
     }
 
-    pCom->thId = ThreadCreate(CommunicationProcThread, pCom, 3 * 1024, FALSE, 3, "CommunicationProc");
-
-    if(NULL == pCom->thId)
+    if(createTh2Parse)
     {
-        LOGE("Creat Communication thread failed\r\n");
-        goto err6;
+        pCom->thId = ThreadCreate(CommunicationProcThread, pCom, 3 * 1024, FALSE, 3, "CommunicationProc");
+
+        if(NULL == pCom->thId)
+        {
+            LOGE("Creat Communication thread failed\r\n");
+            goto err6;
+        }
     }
 
     if(isMaster)
@@ -758,7 +760,11 @@ err8:
 err7:
     pCom->exit = 1;
     TransferPrepareDeinit(pCom->pTransfer);
-    ThreadJoin(pCom->thId);
+
+    if(createTh2Parse)
+    {
+        ThreadJoin(pCom->thId);
+    }
 
 err6:
     MutexDestroy(pCom->waitPackListMtx);
@@ -779,6 +785,251 @@ err1:
     return NULL;
 }
 
+
+VOID_T CommunicationTryParse(COM_ATTR_ST *pCom)
+{
+    COM_PACK_ST *pPack = NULL;
+    U8_T buffer[MAX_PACK_SZ_TOTAL] = {0};
+    U16_T packLen = 0;
+    U16_T sumCheck = 0;
+    S32_T reqLen = 0, getlen = 0;
+    
+    pPack = (COM_PACK_ST *)buffer;
+
+    do
+    {
+        COM_RESULT_ST ackResult = {0};
+
+        reqLen = PACK_HEAD_SZ;
+        getlen = TransferReadRxDat(pCom->pTransfer, buffer, reqLen); // get head
+        if(reqLen > getlen)
+        {
+            return ; // data len is not enough
+        }
+        else if(COM_SOF != COM2H32(pPack->sof))
+        {
+            TransferReleaseRxDat(pCom->pTransfer, reqLen); // data is illeage, release
+            continue;
+        }
+        
+        packLen = COM2H16(pPack->len);
+        if(packLen & 0x0003)
+        {
+            TransferReleaseRxDat(pCom->pTransfer, reqLen); // data is illeage, release
+            LOGE("Error, packe len = %d is not mutiple of 4 or reqLen is zero id = %d, tp = %d\r\n", packLen, COM2H16(pPack->packId), OPTION_PACKTP(pPack->option));
+            continue;
+        }
+        else if(MAX_PACK_DAT_SZ < packLen)
+        {
+            TransferReleaseRxDat(pCom->pTransfer, reqLen); // data is illeage, release
+            LOGE("Error, %d < pack->len\r\n", MAX_PACK_DAT_SZ);
+            continue;
+        }
+
+        reqLen = packLen + PACK_HEAD_SZ;
+        getlen = TransferReadRxDat(pCom->pTransfer, pPack, reqLen); // read data
+        if(reqLen > getlen)
+        {
+            return ;// data len is not enough
+        }
+
+        sumCheck = CalcPackSum(pPack, pPack->data, packLen);
+        pPack->sumCheck = COM2H16(pPack->sumCheck);
+
+        TransferReleaseRxDat(pCom->pTransfer, PACK_HEAD_SZ + packLen); // release
+
+        if(sumCheck != pPack->sumCheck)
+        {
+            LOGE("Error, sum check err, 0x%x != 0x%x\r\n", sumCheck, pPack->sumCheck);
+            LOGE("option=%d, packId%d, len%d, packCnt%d, port%d\r\n", pPack->option, pPack->packId, pPack->len, pPack->packCnt, pPack->port);
+            continue;
+        }
+
+        pPack->packCnt = COM2H32(pPack->packCnt);
+        pPack->packId = COM2H16(pPack->packId);
+        pPack->ackNb = COM2H32(pPack->ackNb);
+
+        switch(OPTION_PACKTP(pPack->option))
+        {
+            case PACKTP_PING_REQ:
+            {
+                SendPingRes(pCom, pPack->packCnt + 1, pPack->data, packLen);
+            }break;
+            
+            case PACKTP_PING_RES:
+            {
+                COM_WAIT_PACK_ATTR_ST *pWaitPack = GetWaitPackFromTail(pCom, pPack->ackNb);
+                if(pWaitPack)
+                {
+                    if(pWaitPack->pBuf)
+                    {
+                        memcpy(pWaitPack->pBuf, pPack->data, pWaitPack->bufLen);
+                    }
+                    pWaitPack->pResult->comRet = COM_RET_SUCCESS;
+                    EventGeneration(pWaitPack->eventWait);
+                    MmMngrFree(pWaitPack);
+                }
+            }break;
+            
+            case PACKTP_THP_DAT:
+            {
+            }break;
+            
+            case PACKTP_THP_REQ:
+            {
+                COM_THP_REQATTR_ST *pThpAttr = (COM_THP_REQATTR_ST *)pPack->data;
+                pThpAttr->packSz = COM2H16(pThpAttr->packSz);
+                pThpAttr->reqDatSz = COM2H32(pThpAttr->reqDatSz);
+
+                if(OPTION_IS_NEEDACK(pPack->option))
+                {
+                    ackResult.comRet = H2COM32(COM_RET_SUCCESS);
+                    SendAckPack(pCom, pPack->packCnt + 1, &ackResult, sizeof(ackResult));
+                }
+                RunThpReq(pCom, pThpAttr);
+            }break;
+            
+            case PACKTP_RESET:
+            {
+                ClrCommunicationBuf(pCom);
+                if(OPTION_IS_NEEDACK(pPack->option))
+                {
+                    S32_T stop = pCom->stop;
+                    pCom->stop = 0;
+                    ackResult.comRet = H2COM32(COM_RET_SUCCESS);
+                    SendAckPack(pCom, pPack->packCnt + 1, &ackResult, sizeof(ackResult));
+                    pCom->stop = stop;
+                }
+            }break;
+
+            case PACKTP_STOP_SEND:
+            {
+                if(OPTION_IS_NEEDACK(pPack->option))
+                {
+                    pCom->stop = 0;
+                    ackResult.comRet = H2COM32(COM_RET_SUCCESS);
+                    SendAckPack(pCom, pPack->packCnt + 1, &ackResult, sizeof(ackResult));
+                }
+                pCom->stop = 1;
+            }break;
+
+            case PACKTP_CONTINUE_SEND:
+            {
+                pCom->stop = 0;
+                if(OPTION_IS_NEEDACK(pPack->option))
+                {
+                    ackResult.comRet = H2COM32(COM_RET_SUCCESS);
+                    SendAckPack(pCom, pPack->packCnt + 1, &ackResult, sizeof(ackResult));
+                }
+            }break;
+
+            case PACKTP_HELLO:
+            {
+                if(OPTION_IS_NEEDACK(pPack->option))
+                {
+                    ackResult.comRet = H2COM32(COM_RET_SUCCESS);
+                    SendAckPack(pCom, pPack->packCnt + 1, &ackResult, sizeof(ackResult));
+                }
+            }break;
+            
+            case PACKTP_SYNC: // time sync slave
+            {
+                COM_TIME_SYNC_ST *pTimeSync = (COM_TIME_SYNC_ST *)pPack->data;
+                
+                pTimeSync->t2 = H2COM64(GET_SYS_TICK_US()); // fill t2
+                pTimeSync->t1 = pPack->timestamp; // rec t1
+                
+                TxSyncPack(pCom, PACKTP_SYNC_ACK, pTimeSync, sizeof(*pTimeSync));
+                
+                if(OPTION_IS_NEEDACK(pPack->option))
+                {
+                    ackResult.comRet = H2COM32(COM_RET_SUCCESS);
+                    SendAckPack(pCom, pPack->packCnt + 1, &ackResult, sizeof(ackResult));
+                }
+            }break;
+
+            case PACKTP_SYNC_ACK: // time sync master
+            {
+                COM_TIME_SYNC_ST *pTimeSync = (COM_TIME_SYNC_ST *)pPack->data;
+                pTimeSync->t4 = GET_SYS_TICK_US(); // fill t4
+                pTimeSync->t3 = COM2H64(pPack->timestamp); // rec t3
+                
+                pTimeSync->t1 = COM2H64(pTimeSync->t1);
+                pTimeSync->t2 = COM2H64(pTimeSync->t2);
+                
+                pCom->timeOffset = ((pTimeSync->t2 - pTimeSync->t1) + (pTimeSync->t3 - pTimeSync->t4)) >> 1;
+                LOGD("time offset = %lld\r\n", pCom->timeOffset);
+            }break;
+
+
+            case PACKTP_RET_DAT:
+            {
+                COM_WAIT_PACK_ATTR_ST *pWaitPack = GetWaitPackFromTail(pCom, pPack->ackNb);
+                
+                if(pWaitPack)
+                {
+                    if(pWaitPack->pBuf)
+                    {
+                        memcpy(pWaitPack->pBuf, pPack->data, pWaitPack->bufLen);
+                    }
+                    pWaitPack->pResult->comRet = COM_RET_SUCCESS;
+                    EventGeneration(pWaitPack->eventWait);
+                    MmMngrFree(pWaitPack);
+                }
+            }break;
+            
+            case PACKTP_ACK:
+            {
+                COM_WAIT_PACK_ATTR_ST *pWaitPack = GetWaitPackFromTail(pCom, pPack->ackNb);
+                COM_RESULT_ST *pResult = (COM_RESULT_ST *)pPack->data;
+                
+                if(pWaitPack)
+                {
+                    pWaitPack->pResult->comRet = COM2H32(pResult->comRet);
+                    pWaitPack->pResult->execRet = COM2H32(pResult->execRet);
+                    EventGeneration(pWaitPack->eventWait);
+                    MmMngrFree(pWaitPack);
+                }
+            }break;
+            
+            
+            case PACKTP_DAT:
+            {
+                COM_PORT_ATTR_ST *pPort = NULL, *pPortMatched = NULL;
+                MutexLock(pCom->portListMtx); 
+                LIST_FOREACH_FROM_HEAD(pPort, &pCom->portList)
+                {
+                    if(pPort->port == pPack->port)
+                    {
+                        pPortMatched = pPort;
+                        break; // matched
+                    }
+                }
+                MutexUnlock(pCom->portListMtx);
+
+                if(pPortMatched)
+                {
+                    ackResult.comRet = pPort->pPackParse(pPort, pPack, &ackResult.execRet);
+                }
+                else
+                {
+                    ackResult.comRet = COM_RET_PORT_NOT_FOUND;
+                }
+
+                if(OPTION_IS_NEEDACK(pPack->option) || (OPTION_IS_GETMETHOD(pPack->option) && COM_RET_SUCCESS != ackResult.comRet))
+                {
+                    ackResult.comRet = H2COM32(ackResult.comRet);
+                    ackResult.execRet = H2COM32(ackResult.execRet);
+                    SendAckPack(pCom, pPack->packCnt + 1, &ackResult, sizeof(ackResult));
+                }
+            }break;
+        }
+        LOGD("%s, %d\r\n", GetPackTypeName(OPTION_PACKTP(pPack->option)), OPTION_PACKTP(pPack->option));
+    }
+    while(!pCom->exit);
+}
+
+
 VOID_T CommunicationDeinit(COM_ATTR_ST *pCom)
 {
     pCom->exit = 1;
@@ -792,7 +1043,11 @@ VOID_T CommunicationDeinit(COM_ATTR_ST *pCom)
     }
 
     TransferPrepareDeinit(pCom->pTransfer);
-    ThreadJoin(pCom->thId);
+
+    if(pCom->thId)
+    {
+        ThreadJoin(pCom->thId);
+    }
 
     TransferDestory(pCom->pTransfer);
     
@@ -857,6 +1112,26 @@ COM_RESULT_ST CommunicationGetPack(COM_ATTR_ST *pCom, U8_T port, U8_T packType, 
 {
     return PackTransaction(pCom, OPTION_GETMETHOD, port, 0, packType, TRUE, wTMs, retryCnt, COM_GET_TICK_US(pCom), packId, pTxDat, tLen, pRxBuf, bLen);
 }
+
+
+S32_T ComPortRetPack(COM_PORT_ATTR_ST *pComPort, U16_T packId, U32_T ackNb, VOID_T *pDat, U16_T dLen)
+{
+    COM_RESULT_ST result = CommunicationTxPack(pComPort->pCom, pComPort->port, ackNb, PACKTP_RET_DAT, FALSE, 0, 0, packId, pDat, dLen);
+    return result.comRet;
+}
+
+S32_T ComPortSndPack(COM_PORT_ATTR_ST *pComPort, U16_T packId, BOOL_T isNeedAck, U32_T wTMs, U8_T retryCnt, VOID_T *pDat, U16_T dLen)
+{
+    COM_RESULT_ST result = CommunicationTxPack(pComPort->pCom, pComPort->port, 0, PACKTP_DAT, isNeedAck, wTMs, retryCnt, packId, pDat, dLen);
+    return result.comRet;
+}
+
+S32_T ComPortGetPack(COM_PORT_ATTR_ST *pComPort, U16_T packId, U32_T wTMs, U8_T retryCnt, VOID_T *pTxDat, U16_T tLen, VOID_T *pBuf, U16_T bLen)
+{
+    COM_RESULT_ST result = CommunicationGetPack(pComPort->pCom, pComPort->port, PACKTP_DAT, wTMs, retryCnt, packId, pTxDat, tLen, pBuf, bLen);
+    return result.comRet;
+}
+
 
 //note: pingDlen must be mutiple of 4
 COM_RESULT_ST CommunicationPing(COM_ATTR_ST *pCom, U16_T pingDlen, U64_T *pDtNs) // ping test
