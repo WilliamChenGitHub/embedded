@@ -10,7 +10,7 @@ CCFLAGS += $(ERRFLAGS)
 
 ARCH := $(shell uname -m)
 
-VERSION_BCD := 0x101
+VERSION_BCD := 0x102
 
 ifeq ($(findstring $(PLATFORM_LINUX),$(MAKECMDGOALS)),$(PLATFORM_LINUX))
     PLATFORM := $(PLATFORM_LINUX)
