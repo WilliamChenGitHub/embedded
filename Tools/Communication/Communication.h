@@ -53,10 +53,11 @@ typedef struct __ComWaitPackAttr
 {
     LIST_ST list;
     
-    U32_T waitPackId;
+    U32_T waitId;
+    U16_T packId;
 
-    VOID_T *pBuf;
     U16_T bufLen;
+    VOID_T *pBuf;
 
     COM_RESULT_ST *pResult;
     EVENT_T eventWait;

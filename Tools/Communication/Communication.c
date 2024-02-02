@@ -78,14 +78,14 @@ static VOID_T ClrCommunicationBuf(COM_ATTR_ST *pCom)
     TransferClrBuf(pCom->pTransfer);
 }
 
-static inline COM_WAIT_PACK_ATTR_ST *GetWaitPackFromHead(COM_ATTR_ST *pCom, U32_T waitPackId)
+static inline COM_WAIT_PACK_ATTR_ST *GetWaitPackFromHead(COM_ATTR_ST *pCom, U32_T waitId, U16_T packId)
 {
     COM_WAIT_PACK_ATTR_ST *pWaitPack = NULL, *pRet = NULL;
 
     MutexLock(pCom->waitPackListMtx);
     LIST_FOREACH_FROM_HEAD(pWaitPack, &pCom->waitPackList)
     {
-        if(pWaitPack->waitPackId == waitPackId)
+        if(pWaitPack->waitId == waitId && pWaitPack->packId == packId)
         {
             LIST_DELETE(pWaitPack);
             pRet = pWaitPack;
@@ -97,14 +97,14 @@ static inline COM_WAIT_PACK_ATTR_ST *GetWaitPackFromHead(COM_ATTR_ST *pCom, U32_
     return pRet;
 }
 
-static inline COM_WAIT_PACK_ATTR_ST *GetWaitPackFromTail(COM_ATTR_ST *pCom, U32_T waitPackId)
+static inline COM_WAIT_PACK_ATTR_ST *GetWaitPackFromTail(COM_ATTR_ST *pCom, U32_T waitId, U16_T packId)
 {
     COM_WAIT_PACK_ATTR_ST *pWaitPack = NULL, *pRet = NULL;
 
     MutexLock(pCom->waitPackListMtx);
     LIST_FOREACH_FROM_TAIL(pWaitPack, &pCom->waitPackList)
     {
-        if(pWaitPack->waitPackId == waitPackId)
+        if(pWaitPack->waitId == waitId && pWaitPack->packId == packId)
         {
             LIST_DELETE(pWaitPack);
             pRet = pWaitPack;
@@ -117,14 +117,15 @@ static inline COM_WAIT_PACK_ATTR_ST *GetWaitPackFromTail(COM_ATTR_ST *pCom, U32_
 
 }
 
-static inline S32_T AddWaitPack(COM_ATTR_ST *pCom, U32_T waitPackId, VOID_T *rcvBuf, U16_T bufLen, EVENT_T event, COM_RESULT_ST *pResult)
+static inline S32_T AddWaitPack(COM_ATTR_ST *pCom, U32_T waitId, U16_T packId, VOID_T *rcvBuf, U16_T bufLen, EVENT_T event, COM_RESULT_ST *pResult)
 {
     COM_WAIT_PACK_ATTR_ST *pWaitPack = MmMngrMalloc(sizeof(*pWaitPack));
     
     if(pWaitPack)
     {
         pWaitPack->bufLen = bufLen;
-        pWaitPack->waitPackId = waitPackId;
+        pWaitPack->waitId = waitId;
+        pWaitPack->packId = packId;
         pWaitPack->pBuf = rcvBuf;
         pWaitPack->pResult = pResult;
         pWaitPack->eventWait = event;
@@ -139,9 +140,9 @@ static inline S32_T AddWaitPack(COM_ATTR_ST *pCom, U32_T waitPackId, VOID_T *rcv
     return -1;
 }
 
-static inline S32_T DeletWaitPackWithId(COM_ATTR_ST *pCom, U32_T waitPackId)
+static inline S32_T DeletWaitPackWithId(COM_ATTR_ST *pCom, U32_T waitId, U16_T packId)
 {
-    COM_WAIT_PACK_ATTR_ST *pWaitPack = GetWaitPackFromTail(pCom, waitPackId);
+    COM_WAIT_PACK_ATTR_ST *pWaitPack = GetWaitPackFromTail(pCom, waitId, packId);
 
     if(pWaitPack)
     {
@@ -219,7 +220,7 @@ static inline COM_RESULT_ST PackTransaction(COM_ATTR_ST *pCom, U8_T method, U8_T
         eventWait = EventCreate();
         if(eventWait)
         {
-            if(AddWaitPack(pCom, packCnt + 1, pRxBuf, rLen, eventWait, &result))
+            if(AddWaitPack(pCom, packCnt + 1, packId, pRxBuf, rLen, eventWait, &result))
             {
                 EventDestroy(eventWait);
                 comRet = COM_RET_ADD_WAIT_FAILED;
@@ -279,7 +280,7 @@ static inline COM_RESULT_ST PackTransaction(COM_ATTR_ST *pCom, U8_T method, U8_T
 
     if(isNeedAck)
     {
-        if(DeletWaitPackWithId(pCom, packCnt + 1)) // recheck wether the wait pack is exist if exist delet
+        if(DeletWaitPackWithId(pCom, packCnt + 1, packId)) // recheck wether the wait pack is exist if exist delet
         {
             //if the pack does not exist, the pack must be get by the communicationProcThread so we need wait again
             comRet = WaitPack(pCom, wTMs, eventWait, &result);
@@ -351,9 +352,9 @@ S32_T CommunicationReset(COM_ATTR_ST *pCom)
 }
 
 
-static inline COM_RESULT_ST SendAckPack(COM_ATTR_ST *pCom, U32_T ackNb, VOID_T *pDat, U16_T dLen)
+static inline COM_RESULT_ST SendAckPack(COM_ATTR_ST *pCom, U32_T ackNb, U16_T packId, VOID_T *pDat, U16_T dLen)
 {
-    return CommunicationTxPack(pCom, 0, ackNb, PACKTP_ACK, FALSE, 0, 0, 0, pDat, dLen);
+    return CommunicationTxPack(pCom, 0, ackNb, PACKTP_ACK, FALSE, 0, 0, packId, pDat, dLen);
 }
 
 static inline COM_RESULT_ST SendPingRes(COM_ATTR_ST *pCom, U32_T ackNb, U8_T *pDat, U16_T pingDlen)
@@ -492,7 +493,7 @@ static VOID_T *CommunicationProcThread(VOID_T *argument)
             
             case PACKTP_PING_RES:
             {
-                COM_WAIT_PACK_ATTR_ST *pWaitPack = GetWaitPackFromTail(pCom, pPack->ackNb);
+                COM_WAIT_PACK_ATTR_ST *pWaitPack = GetWaitPackFromTail(pCom, pPack->ackNb, pPack->packId);
                 if(pWaitPack)
                 {
                     if(pWaitPack->pBuf)
@@ -518,7 +519,7 @@ static VOID_T *CommunicationProcThread(VOID_T *argument)
                 if(OPTION_IS_NEEDACK(pPack->option))
                 {
                     ackResult.comRet = H2COM32(COM_RET_SUCCESS);
-                    SendAckPack(pCom, pPack->packCnt + 1, &ackResult, sizeof(ackResult));
+                    SendAckPack(pCom, pPack->packCnt + 1, pPack->packId, &ackResult, sizeof(ackResult));
                 }
                 RunThpReq(pCom, pThpAttr);
             }break;
@@ -531,7 +532,7 @@ static VOID_T *CommunicationProcThread(VOID_T *argument)
                     S32_T stop = pCom->stop;
                     pCom->stop = 0;
                     ackResult.comRet = H2COM32(COM_RET_SUCCESS);
-                    SendAckPack(pCom, pPack->packCnt + 1, &ackResult, sizeof(ackResult));
+                    SendAckPack(pCom, pPack->packCnt + 1, pPack->packId, &ackResult, sizeof(ackResult));
                     pCom->stop = stop;
                 }
             }break;
@@ -542,7 +543,7 @@ static VOID_T *CommunicationProcThread(VOID_T *argument)
                 {
                     pCom->stop = 0;
                     ackResult.comRet = H2COM32(COM_RET_SUCCESS);
-                    SendAckPack(pCom, pPack->packCnt + 1, &ackResult, sizeof(ackResult));
+                    SendAckPack(pCom, pPack->packCnt + 1, pPack->packId, &ackResult, sizeof(ackResult));
                 }
                 pCom->stop = 1;
             }break;
@@ -553,7 +554,7 @@ static VOID_T *CommunicationProcThread(VOID_T *argument)
                 if(OPTION_IS_NEEDACK(pPack->option))
                 {
                     ackResult.comRet = H2COM32(COM_RET_SUCCESS);
-                    SendAckPack(pCom, pPack->packCnt + 1, &ackResult, sizeof(ackResult));
+                    SendAckPack(pCom, pPack->packCnt + 1, pPack->packId, &ackResult, sizeof(ackResult));
                 }
             }break;
 
@@ -562,7 +563,7 @@ static VOID_T *CommunicationProcThread(VOID_T *argument)
                 if(OPTION_IS_NEEDACK(pPack->option))
                 {
                     ackResult.comRet = H2COM32(COM_RET_SUCCESS);
-                    SendAckPack(pCom, pPack->packCnt + 1, &ackResult, sizeof(ackResult));
+                    SendAckPack(pCom, pPack->packCnt + 1, pPack->packId, &ackResult, sizeof(ackResult));
                 }
             }break;
             
@@ -578,7 +579,7 @@ static VOID_T *CommunicationProcThread(VOID_T *argument)
                 if(OPTION_IS_NEEDACK(pPack->option))
                 {
                     ackResult.comRet = H2COM32(COM_RET_SUCCESS);
-                    SendAckPack(pCom, pPack->packCnt + 1, &ackResult, sizeof(ackResult));
+                    SendAckPack(pCom, pPack->packCnt + 1, pPack->packId, &ackResult, sizeof(ackResult));
                 }
             }break;
 
@@ -598,7 +599,7 @@ static VOID_T *CommunicationProcThread(VOID_T *argument)
 
             case PACKTP_RET_DAT:
             {
-                COM_WAIT_PACK_ATTR_ST *pWaitPack = GetWaitPackFromTail(pCom, pPack->ackNb);
+                COM_WAIT_PACK_ATTR_ST *pWaitPack = GetWaitPackFromTail(pCom, pPack->ackNb, pPack->packId);
                 
                 if(pWaitPack)
                 {
@@ -614,7 +615,7 @@ static VOID_T *CommunicationProcThread(VOID_T *argument)
             
             case PACKTP_ACK:
             {
-                COM_WAIT_PACK_ATTR_ST *pWaitPack = GetWaitPackFromTail(pCom, pPack->ackNb);
+                COM_WAIT_PACK_ATTR_ST *pWaitPack = GetWaitPackFromTail(pCom, pPack->ackNb, pPack->packId);
                 COM_RESULT_ST *pResult = (COM_RESULT_ST *)pPack->data;
                 
                 if(pWaitPack)
@@ -625,7 +626,6 @@ static VOID_T *CommunicationProcThread(VOID_T *argument)
                     MmMngrFree(pWaitPack);
                 }
             }break;
-            
             
             case PACKTP_DAT:
             {
@@ -654,7 +654,7 @@ static VOID_T *CommunicationProcThread(VOID_T *argument)
                 {
                     ackResult.comRet = H2COM32(ackResult.comRet);
                     ackResult.execRet = H2COM32(ackResult.execRet);
-                    SendAckPack(pCom, pPack->packCnt + 1, &ackResult, sizeof(ackResult));
+                    SendAckPack(pCom, pPack->packCnt + 1, pPack->packId, &ackResult, sizeof(ackResult));
                 }
             }break;
         }
@@ -858,7 +858,7 @@ VOID_T CommunicationTryParse(COM_ATTR_ST *pCom)
             
             case PACKTP_PING_RES:
             {
-                COM_WAIT_PACK_ATTR_ST *pWaitPack = GetWaitPackFromTail(pCom, pPack->ackNb);
+                COM_WAIT_PACK_ATTR_ST *pWaitPack = GetWaitPackFromTail(pCom, pPack->ackNb, pPack->packId);
                 if(pWaitPack)
                 {
                     if(pWaitPack->pBuf)
@@ -884,7 +884,7 @@ VOID_T CommunicationTryParse(COM_ATTR_ST *pCom)
                 if(OPTION_IS_NEEDACK(pPack->option))
                 {
                     ackResult.comRet = H2COM32(COM_RET_SUCCESS);
-                    SendAckPack(pCom, pPack->packCnt + 1, &ackResult, sizeof(ackResult));
+                    SendAckPack(pCom, pPack->packCnt + 1, pPack->packId, &ackResult, sizeof(ackResult));
                 }
                 RunThpReq(pCom, pThpAttr);
             }break;
@@ -897,7 +897,7 @@ VOID_T CommunicationTryParse(COM_ATTR_ST *pCom)
                     S32_T stop = pCom->stop;
                     pCom->stop = 0;
                     ackResult.comRet = H2COM32(COM_RET_SUCCESS);
-                    SendAckPack(pCom, pPack->packCnt + 1, &ackResult, sizeof(ackResult));
+                    SendAckPack(pCom, pPack->packCnt + 1, pPack->packId, &ackResult, sizeof(ackResult));
                     pCom->stop = stop;
                 }
             }break;
@@ -908,7 +908,7 @@ VOID_T CommunicationTryParse(COM_ATTR_ST *pCom)
                 {
                     pCom->stop = 0;
                     ackResult.comRet = H2COM32(COM_RET_SUCCESS);
-                    SendAckPack(pCom, pPack->packCnt + 1, &ackResult, sizeof(ackResult));
+                    SendAckPack(pCom, pPack->packCnt + 1, pPack->packId, &ackResult, sizeof(ackResult));
                 }
                 pCom->stop = 1;
             }break;
@@ -919,7 +919,7 @@ VOID_T CommunicationTryParse(COM_ATTR_ST *pCom)
                 if(OPTION_IS_NEEDACK(pPack->option))
                 {
                     ackResult.comRet = H2COM32(COM_RET_SUCCESS);
-                    SendAckPack(pCom, pPack->packCnt + 1, &ackResult, sizeof(ackResult));
+                    SendAckPack(pCom, pPack->packCnt + 1, pPack->packId, &ackResult, sizeof(ackResult));
                 }
             }break;
 
@@ -928,7 +928,7 @@ VOID_T CommunicationTryParse(COM_ATTR_ST *pCom)
                 if(OPTION_IS_NEEDACK(pPack->option))
                 {
                     ackResult.comRet = H2COM32(COM_RET_SUCCESS);
-                    SendAckPack(pCom, pPack->packCnt + 1, &ackResult, sizeof(ackResult));
+                    SendAckPack(pCom, pPack->packCnt + 1, pPack->packId, &ackResult, sizeof(ackResult));
                 }
             }break;
             
@@ -944,7 +944,7 @@ VOID_T CommunicationTryParse(COM_ATTR_ST *pCom)
                 if(OPTION_IS_NEEDACK(pPack->option))
                 {
                     ackResult.comRet = H2COM32(COM_RET_SUCCESS);
-                    SendAckPack(pCom, pPack->packCnt + 1, &ackResult, sizeof(ackResult));
+                    SendAckPack(pCom, pPack->packCnt + 1, pPack->packId, &ackResult, sizeof(ackResult));
                 }
             }break;
 
@@ -964,7 +964,7 @@ VOID_T CommunicationTryParse(COM_ATTR_ST *pCom)
 
             case PACKTP_RET_DAT:
             {
-                COM_WAIT_PACK_ATTR_ST *pWaitPack = GetWaitPackFromTail(pCom, pPack->ackNb);
+                COM_WAIT_PACK_ATTR_ST *pWaitPack = GetWaitPackFromTail(pCom, pPack->ackNb, pPack->packId);
                 
                 if(pWaitPack)
                 {
@@ -980,7 +980,7 @@ VOID_T CommunicationTryParse(COM_ATTR_ST *pCom)
             
             case PACKTP_ACK:
             {
-                COM_WAIT_PACK_ATTR_ST *pWaitPack = GetWaitPackFromTail(pCom, pPack->ackNb);
+                COM_WAIT_PACK_ATTR_ST *pWaitPack = GetWaitPackFromTail(pCom, pPack->ackNb, pPack->packId);
                 COM_RESULT_ST *pResult = (COM_RESULT_ST *)pPack->data;
                 
                 if(pWaitPack)
@@ -1020,7 +1020,7 @@ VOID_T CommunicationTryParse(COM_ATTR_ST *pCom)
                 {
                     ackResult.comRet = H2COM32(ackResult.comRet);
                     ackResult.execRet = H2COM32(ackResult.execRet);
-                    SendAckPack(pCom, pPack->packCnt + 1, &ackResult, sizeof(ackResult));
+                    SendAckPack(pCom, pPack->packCnt + 1, pPack->packId, &ackResult, sizeof(ackResult));
                 }
             }break;
         }
