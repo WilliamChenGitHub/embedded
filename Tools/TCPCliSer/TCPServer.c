@@ -13,7 +13,8 @@ static void ConnectionNodeDestory(void *pArg)
 {
     CONNECTION_NODE_ST *pConnectNode = (CONNECTION_NODE_ST *)pArg;
 
-    CommunicationDeinit(pConnectNode->pCom);
+    CommunicationUnregPort(&pConnectNode->comPort);
+    CommunicationDeinit(pConnectNode->comPort.pCom);
     MmMngrFree(pConnectNode);
 }
 
@@ -29,6 +30,7 @@ static void ServerMonitorMission(void *pArg)
     struct epoll_event ev;
 
     TCP_TRANSFER_FACTORY_ST tcpTransferFact = {0};
+    COM_ATTR_ST *pCom = NULL;
 
     while(pTCPSer->monitor)
     {
@@ -72,12 +74,12 @@ static void ServerMonitorMission(void *pArg)
                     pNewConnectionNode->hasNode.key = cliSocket;
 
                     TCPTransferFactoryInit((TRANSFER_FACTORY_ST *)&tcpTransferFact, cliSocket, false);
-                    pNewConnectionNode->pCom = CommunicationInit((TRANSFER_FACTORY_ST *)&tcpTransferFact, false, false);
-                    if(!pNewConnectionNode->pCom)
+                    pCom = CommunicationInit((TRANSFER_FACTORY_ST *)&tcpTransferFact, false, false);
+                    if(!pCom)
                     {
                         goto err3;
                     }
-                    CommunicationRegPort(pNewConnectionNode->pCom, &pNewConnectionNode->comPort, pTCPSer->pParseCb, 1);
+                    CommunicationRegPort(pCom, &pNewConnectionNode->comPort, pTCPSer->pParseCb, 1);
                     
                     if(HashTableInsert(pTCPSer->pCHTbl, &pNewConnectionNode->hasNode))
                     {
@@ -87,7 +89,8 @@ static void ServerMonitorMission(void *pArg)
                     continue;
 
                     err4:
-                        CommunicationDeinit(pNewConnectionNode->pCom);
+                        CommunicationUnregPort(&pNewConnectionNode->comPort);
+                        CommunicationDeinit(pCom);
 
                     err3:
                         MmMngrFree(pNewConnectionNode);
@@ -106,8 +109,6 @@ static void ServerMonitorMission(void *pArg)
                 bool disconnect = false;
                 if(pNode)
                 {
-                    COM_ATTR_ST *pCom = (COM_ATTR_ST *)pNode->pCom;
-
                     do
                     {
                         int32_t rxBytes = recv(cliSocket, pTCPSer->buf, sizeof(pTCPSer->buf), 0);
@@ -116,7 +117,7 @@ static void ServerMonitorMission(void *pArg)
                         
                         if(0 < rxBytes)
                         {
-                            TransferRx(pCom->pTransfer, pTCPSer->buf, rxBytes);
+                            TransferRx(pNode->comPort.pCom->pTransfer, pTCPSer->buf, rxBytes);
                         }
                         else if(0 == rxBytes)
                         {
@@ -143,7 +144,7 @@ static void ServerMonitorMission(void *pArg)
                         }
                     }
                     while (1);
-                    ThreadPoolDispatchMission(pTCPSer->pThP, (THREAD_POOL_MISSION)CommunicationTryParse, pCom);
+                    ThreadPoolDispatchMission(pTCPSer->pThP, (THREAD_POOL_MISSION)CommunicationTryParse, pNode->comPort.pCom);
                     if(disconnect)
                     {
                         LOGD("disconnect = %x\r\n", pNode->hasNode.key);

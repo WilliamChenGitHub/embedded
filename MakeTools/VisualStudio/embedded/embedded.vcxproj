@@ -92,8 +92,11 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>Z:\Project\Embedded\Tools\ThreadPool;Z:\Project\Embedded\Tools\JSON;Z:\Project\Embedded\Tools\Communication;Z:\Project\Embedded\Test;Z:\Project\Embedded\DataStruct\Tree;Z:\Project\Embedded\DataStruct\Stack;Z:\Project\Embedded\DataStruct\Queue;Z:\Project\Embedded\DataStruct\List;Z:\Project\Embedded\DataStruct\Graph;Z:\Project\Embedded\Common;Z:\Project\Embedded\Algorithm\Sort;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>Z:\Project\Embedded\Tools\TCPCliSer;Z:\Project\Embedded\DataStruct;Z:\Project\Embedded\Tools\ThreadPool;Z:\Project\Embedded\Tools\JSON;Z:\Project\Embedded\Tools\Communication;Z:\Project\Embedded\Test;Z:\Project\Embedded\Common;Z:\Project\Embedded\Algorithm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <CallingConvention>Cdecl</CallingConvention>
+      <SupportJustMyCode>false</SupportJustMyCode>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -108,8 +111,9 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>WIN32;NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>Z:\Project\Embedded\Tools\ThreadPool;Z:\Project\Embedded\Tools\JSON;Z:\Project\Embedded\Tools\Communication;Z:\Project\Embedded\Test;Z:\Project\Embedded\DataStruct\Tree;Z:\Project\Embedded\DataStruct\Stack;Z:\Project\Embedded\DataStruct\Queue;Z:\Project\Embedded\DataStruct\List;Z:\Project\Embedded\DataStruct\Graph;Z:\Project\Embedded\Common;Z:\Project\Embedded\Algorithm\Sort;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>Z:\Project\Embedded\Tools\TCPCliSer;Z:\Project\Embedded\DataStruct;Z:\Project\Embedded\Tools\ThreadPool;Z:\Project\Embedded\Tools\JSON;Z:\Project\Embedded\Tools\Communication;Z:\Project\Embedded\Test;Z:\Project\Embedded\Common;Z:\Project\Embedded\Algorithm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <CallingConvention>Cdecl</CallingConvention>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -124,7 +128,10 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>Z:\Project\Embedded\Tools\ThreadPool;Z:\Project\Embedded\Tools\JSON;Z:\Project\Embedded\Tools\Communication;Z:\Project\Embedded\Test;Z:\Project\Embedded\DataStruct\Tree;Z:\Project\Embedded\DataStruct\Stack;Z:\Project\Embedded\DataStruct\Queue;Z:\Project\Embedded\DataStruct\List;Z:\Project\Embedded\DataStruct\Graph;Z:\Project\Embedded\Common;Z:\Project\Embedded\Algorithm\Sort;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>Z:\Project\Embedded\Tools\TCPCliSer;Z:\Project\Embedded\DataStruct;Z:\Project\Embedded\Tools\ThreadPool;Z:\Project\Embedded\Tools\JSON;Z:\Project\Embedded\Tools\Communication;Z:\Project\Embedded\Test;Z:\Project\Embedded\Common;Z:\Project\Embedded\Algorithm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <SupportJustMyCode>false</SupportJustMyCode>
+      <BasicRuntimeChecks>Default</BasicRuntimeChecks>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -139,7 +146,8 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <AdditionalIncludeDirectories>Z:\Project\Embedded\Tools\ThreadPool;Z:\Project\Embedded\Tools\JSON;Z:\Project\Embedded\Tools\Communication;Z:\Project\Embedded\Test;Z:\Project\Embedded\DataStruct\Tree;Z:\Project\Embedded\DataStruct\Stack;Z:\Project\Embedded\DataStruct\Queue;Z:\Project\Embedded\DataStruct\List;Z:\Project\Embedded\DataStruct\Graph;Z:\Project\Embedded\Common;Z:\Project\Embedded\Algorithm\Sort;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>Z:\Project\Embedded\Tools\TCPCliSer;Z:\Project\Embedded\DataStruct;Z:\Project\Embedded\Tools\ThreadPool;Z:\Project\Embedded\Tools\JSON;Z:\Project\Embedded\Tools\Communication;Z:\Project\Embedded\Test;Z:\Project\Embedded\Common;Z:\Project\Embedded\Algorithm;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <BufferSecurityCheck>false</BufferSecurityCheck>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -149,17 +157,18 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\Algorithm\Sort\Sort.c" />
+    <ClCompile Include="..\..\..\Algorithm\Sort.c" />
     <ClCompile Include="..\..\..\Common\Log.c" />
     <ClCompile Include="..\..\..\Common\Miscellaneous.c" />
     <ClCompile Include="..\..\..\Common\MmMngr.c" />
+    <ClCompile Include="..\..\..\Common\Socket.c" />
     <ClCompile Include="..\..\..\Common\Thread.c" />
-    <ClCompile Include="..\..\..\DataStruct\Graph\Graph.c" />
-    <ClCompile Include="..\..\..\DataStruct\List\List.c" />
-    <ClCompile Include="..\..\..\DataStruct\Queue\Queue.c" />
-    <ClCompile Include="..\..\..\DataStruct\Stack\Stack.c" />
-    <ClCompile Include="..\..\..\DataStruct\Tree\Tree.c" />
-    <ClCompile Include="..\..\..\Test\test.c" />
+    <ClCompile Include="..\..\..\DataStruct\Graph.c" />
+    <ClCompile Include="..\..\..\DataStruct\HashTable.c" />
+    <ClCompile Include="..\..\..\DataStruct\List.c" />
+    <ClCompile Include="..\..\..\DataStruct\Queue.c" />
+    <ClCompile Include="..\..\..\DataStruct\Stack.c" />
+    <ClCompile Include="..\..\..\DataStruct\Tree.c" />
     <ClCompile Include="..\..\..\Tools\Communication\Communication.c" />
     <ClCompile Include="..\..\..\Tools\Communication\Transfer.c" />
     <ClCompile Include="..\..\..\Tools\Communication\TransferFactory.c" />
@@ -167,18 +176,11 @@
     <ClCompile Include="..\..\..\Tools\ThreadPool\ThreadPool.c" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\Algorithm\Sort\Sort.h" />
     <ClInclude Include="..\..\..\Common\Log.h" />
     <ClInclude Include="..\..\..\Common\Miscellaneous.h" />
     <ClInclude Include="..\..\..\Common\MmMngr.h" />
     <ClInclude Include="..\..\..\Common\Thread.h" />
     <ClInclude Include="..\..\..\Common\TypeDef.h" />
-    <ClInclude Include="..\..\..\DataStruct\Graph\Graph.h" />
-    <ClInclude Include="..\..\..\DataStruct\List\List.h" />
-    <ClInclude Include="..\..\..\DataStruct\Queue\Queue.h" />
-    <ClInclude Include="..\..\..\DataStruct\Stack\Stack.h" />
-    <ClInclude Include="..\..\..\DataStruct\Tree\Tree.h" />
-    <ClInclude Include="..\..\..\Test\test.h" />
     <ClInclude Include="..\..\..\Tools\Communication\Communication.h" />
     <ClInclude Include="..\..\..\Tools\Communication\Transfer.h" />
     <ClInclude Include="..\..\..\Tools\Communication\TransferFactory.h" />

@@ -54,7 +54,7 @@ static S32_T tcpSerMsgParse(COM_PORT_ATTR_ST *pComPort, COM_PACK_ST *pPack, S32_
         {
             case 2:
             {
-                int *pDat = pPack->data;
+                int *pDat = (int *)pPack->data;
                 LOGI("receive from client data = %d\r\n", *pDat);
             }break;
                 
@@ -70,8 +70,7 @@ static S32_T tcpSerMsgParse(COM_PORT_ATTR_ST *pComPort, COM_PACK_ST *pPack, S32_
         {
             case 1:
             {
-                int i;
-                i++;
+                int i = 12345;
                 ComPortRetPack(pComPort, 1, pPack->packCnt + 1, &i, sizeof i);
             }break;
 

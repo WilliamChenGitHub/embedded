@@ -341,7 +341,7 @@
               <MiscControls></MiscControls>
               <Define></Define>
               <Undefine></Undefine>
-              <IncludePath>..\..\Algorithm\Sort;..\..\Common;..\..\DataStruct\List;..\..\DataStruct\Queue;..\..\Test;..\..\Tools\Communication;..\..\Tools\JSON;..\MDK_LPC1768;..\..\Tools\ThreadPool</IncludePath>
+              <IncludePath>..\..\Algorithm;..\..\Common;..\..\DataStruct;..\..\Test;..\..\Tools\Communication;..\..\Tools\JSON;..\MDK_LPC1768;..\..\Tools\ThreadPool;..\..\Tools\TCPCliSer</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -388,7 +388,7 @@
             <File>
               <FileName>Sort.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\Algorithm\Sort\Sort.c</FilePath>
+              <FilePath>..\..\Algorithm\Sort.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -421,39 +421,34 @@
           <GroupName>DataStruct</GroupName>
           <Files>
             <File>
-              <FileName>Tree.c</FileName>
+              <FileName>Graph.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\DataStruct\Tree\Tree.c</FilePath>
+              <FilePath>..\..\DataStruct\Graph.c</FilePath>
+            </File>
+            <File>
+              <FileName>HashTable.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\DataStruct\HashTable.c</FilePath>
             </File>
             <File>
               <FileName>List.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\DataStruct\List\List.c</FilePath>
+              <FilePath>..\..\DataStruct\List.c</FilePath>
             </File>
             <File>
               <FileName>Queue.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\DataStruct\Queue\Queue.c</FilePath>
+              <FilePath>..\..\DataStruct\Queue.c</FilePath>
             </File>
             <File>
               <FileName>Stack.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\DataStruct\Stack\Stack.c</FilePath>
+              <FilePath>..\..\DataStruct\Stack.c</FilePath>
             </File>
             <File>
-              <FileName>Graph.c</FileName>
+              <FileName>Tree.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\DataStruct\Graph\Graph.c</FilePath>
-            </File>
-          </Files>
-        </Group>
-        <Group>
-          <GroupName>Test</GroupName>
-          <Files>
-            <File>
-              <FileName>test.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\Test\test.c</FilePath>
+              <FilePath>..\..\DataStruct\Tree.c</FilePath>
             </File>
           </Files>
         </Group>

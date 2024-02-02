@@ -8,7 +8,7 @@
 
 
 
-#define MAX_MONITOR_EVENTS_EVERY_TIME 256
+#define MAX_MONITOR_EVENTS_EVERY_TIME 128
 
 typedef struct __tcpSer
 {
@@ -28,7 +28,6 @@ typedef struct __tcpSer
 typedef struct
 {
     HASH_NODE_ST hasNode;
-    COM_ATTR_ST *pCom;
     COM_PORT_ATTR_ST comPort;
 }CONNECTION_NODE_ST;
 

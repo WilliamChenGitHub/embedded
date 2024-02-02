@@ -138,6 +138,7 @@ err1:
 
 void TcpClientDestory(TCP_CLIENT_ST *pTCPCli)
 {
+    CommunicationUnregPort(&pTCPCli->comPort);
     CommunicationDeinit(pTCPCli->pCom);
     close(pTCPCli->socket);
     MmMngrFree(pTCPCli);
