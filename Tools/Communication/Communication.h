@@ -210,32 +210,32 @@ typedef struct __comPack// total len must be mutiple of 4
 
 #ifdef MACHINE_BYTE_ORDER_LITTLE
     #ifdef COM_BYTE_ORDER_LITTLE
-        #define COM2H(x, bits) (x)
+        #define COMBLSW(x, bits) (x)
     #else
         #ifdef COM_BYTE_ORDER_BIG
-            #define COM2H(x, bits) COM_BIGLITTLESW#bits(x)
+            #define COMBLSW(x, bits) COM_BIGLITTLESW##bits(x)
         #endif
     #endif
     
 #else
     #ifdef COM_BYTE_ORDER_LITTLE
-        #define COM2H(x, bits) COM_BIGLITTLESW#bits(x)
+        #define COMBLSW(x, bits) COM_BIGLITTLESW##bits(x)
     #else
         #ifdef COM_BYTE_ORDER_BIG
-            #define COM2H(x, bits) (x)
+            #define COMBLSW(x, bits) (x)
         #endif
     #endif
 #endif
 
 
-#define COM2H64(x) COM2H(x, 64)
-#define COM2H32(x) COM2H(x, 32)
-#define COM2H16(x) COM2H(x, 16)
+#define COM2H64(x) COMBLSW(x, 64)
+#define COM2H32(x) COMBLSW(x, 32)
+#define COM2H16(x) COMBLSW(x, 16)
 
 
-#define H2COM64(x) COM2H(x, 64)
-#define H2COM32(x) COM2H(x, 32)
-#define H2COM16(x) COM2H(x, 16)
+#define H2COM64(x) COMBLSW(x, 64)
+#define H2COM32(x) COMBLSW(x, 32)
+#define H2COM16(x) COMBLSW(x, 16)
 
 
 #ifdef __cplusplus
