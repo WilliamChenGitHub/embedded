@@ -139,7 +139,7 @@ void TCPSerCliTst(char *pSerIp)
     else
     {
         LOGI("start TCP server\r\n");
-        TCP_SERVER_ST *pTCPSer = TcpServerCreate(NULL, 1234, tcpSerMsgParse, 20, 1024 * 3, 1000);
+        TCP_SERVER_ST *pTCPSer = TcpServerCreate(NULL, 1234, tcpSerMsgParse, 20, 1024 * 3, 1000, 0);
 
         if(!pTCPSer)
         {
