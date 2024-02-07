@@ -22,6 +22,7 @@ typedef struct __tcpSer
     uint8_t buf[1024];
 
     COM_PACK_PARSE_FT pParseCb;
+    uint32_t usrDataSz;
 }TCP_SERVER_ST;
 
 
@@ -29,6 +30,7 @@ typedef struct
 {
     HASH_NODE_ST hasNode;
     COM_PORT_ATTR_ST comPort;
+    uint8_t usrDatBuf[0];
 }CONNECTION_NODE_ST;
 
 
@@ -36,7 +38,7 @@ typedef struct
 extern "C"{
 #endif
 
-TCP_SERVER_ST *TcpServerCreate(const char *ipaddr, const uint16_t port, COM_PACK_PARSE_FT pParseCb, uint32_t threadNb, uint32_t threadStkSz, uint32_t connTblSz);
+TCP_SERVER_ST *TcpServerCreate(const char *ipaddr, const uint16_t port, COM_PACK_PARSE_FT pParseCb, uint32_t threadNb, uint32_t threadStkSz, uint32_t connTblSz, uint32_t usrDataSz);
 
 VOID_T TcpServerDestory(TCP_SERVER_ST *pTCPSer);
 

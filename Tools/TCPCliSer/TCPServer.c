@@ -63,13 +63,13 @@ static void ServerMonitorMission(void *pArg)
                         goto err1;
                     }
 
-                    CONNECTION_NODE_ST *pNewConnectionNode = MmMngrMalloc(sizeof *pNewConnectionNode);
+                    CONNECTION_NODE_ST *pNewConnectionNode = MmMngrMalloc(sizeof *pNewConnectionNode + pTCPSer->usrDataSz);
                     if(!pNewConnectionNode)
                     {
                         LOGE("malloc new connection failed\r\n");
                         goto err2;
                     }
-
+                    memset(pNewConnectionNode, 0, sizeof *pNewConnectionNode + pTCPSer->usrDataSz);
                     pNewConnectionNode->hasNode.pNodeDestory = ConnectionNodeDestory;
                     pNewConnectionNode->hasNode.key = cliSocket;
 
@@ -161,7 +161,7 @@ static void ServerMonitorMission(void *pArg)
 
 
 
-TCP_SERVER_ST *TcpServerCreate(const char *ipaddr, const uint16_t port, COM_PACK_PARSE_FT pParseCb, uint32_t threadNb, uint32_t threadStkSz, uint32_t connTblSz)
+TCP_SERVER_ST *TcpServerCreate(const char *ipaddr, const uint16_t port, COM_PACK_PARSE_FT pParseCb, uint32_t threadNb, uint32_t threadStkSz, uint32_t connTblSz, uint32_t usrDataSz)
 {
     TCP_SERVER_ST *pTCPSer = NULL;
     struct epoll_event ev = {0};
@@ -257,6 +257,8 @@ TCP_SERVER_ST *TcpServerCreate(const char *ipaddr, const uint16_t port, COM_PACK
 
     pTCPSer->pParseCb = pParseCb;
     pTCPSer->monitor = 1;
+    pTCPSer->usrDataSz = usrDataSz;
+        
     if(ThreadPoolDispatchMission(pTCPSer->pThP, ServerMonitorMission, pTCPSer)) // start monitor server
     {
         LOGE("start server monitor mission failed\r\n");
