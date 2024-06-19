@@ -40,7 +40,7 @@ extern "C"{
 
 TCP_SERVER_ST *TcpServerCreate(const char *ipaddr, const uint16_t port, COM_PACK_PARSE_FT pParseCb, uint32_t threadNb, uint32_t threadStkSz, uint32_t connTblSz, uint32_t usrDataSz);
 
-VOID_T TcpServerDestory(TCP_SERVER_ST *pTCPSer);
+void TcpServerDestory(TCP_SERVER_ST *pTCPSer);
 
 #ifdef __cplusplus
 }

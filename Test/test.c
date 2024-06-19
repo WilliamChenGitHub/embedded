@@ -3,9 +3,9 @@
 #include "ThreadPool.h"
 
 
-static S32_T tcpCliMsgParse(COM_PORT_ATTR_ST *pComPort,  COM_PACK_ST *pPack, S32_T *pExecRet)
+static int32_t tcpCliMsgParse(COM_PORT_ATTR_ST *pComPort,  COM_PACK_ST *pPack, int32_t *pExecRet)
 {
-    S32_T ret = COM_RET_SUCCESS;
+    int32_t ret = COM_RET_SUCCESS;
 
     TCP_CLIENT_ST *pTCPCli = ST_CONTAINER_OF(pComPort, TCP_CLIENT_ST, comPort);
 
@@ -41,9 +41,9 @@ static S32_T tcpCliMsgParse(COM_PORT_ATTR_ST *pComPort,  COM_PACK_ST *pPack, S32
 
 
 
-static S32_T tcpSerMsgParse(COM_PORT_ATTR_ST *pComPort, COM_PACK_ST *pPack, S32_T *pExecRet)
+static int32_t tcpSerMsgParse(COM_PORT_ATTR_ST *pComPort, COM_PACK_ST *pPack, int32_t *pExecRet)
 {
-    S32_T ret = COM_RET_SUCCESS;
+    int32_t ret = COM_RET_SUCCESS;
 
     CONNECTION_NODE_ST *pConnection = ST_CONTAINER_OF(pComPort, CONNECTION_NODE_ST, comPort);
 
@@ -92,7 +92,7 @@ static S32_T tcpSerMsgParse(COM_PORT_ATTR_ST *pComPort, COM_PACK_ST *pPack, S32_
 
 
 
-VOID_T tcpCliMission(VOID_T *pArg)
+void tcpCliMission(void *pArg)
 {
     char *pSerIp = pArg;
     
@@ -105,7 +105,7 @@ VOID_T tcpCliMission(VOID_T *pArg)
         return;
     }
 
-    U64_T dt = 0;
+    uint64_t dt = 0;
     CommunicationPing(pTCPCli->pCom, 512, &dt);
     LOGI("ping dt = %lld\r\n", dt / 1000000);
 
@@ -125,7 +125,7 @@ void TCPSerCliTst(char *pSerIp)
     {
         LOGI("start TCP client\r\n");
 
-        S32_T i = 0;
+        int32_t i = 0;
         THREAD_POOL_ST *pTp = ThreadPoolCreate(500, 1024 * 3);
         
         for(i = 0; i < 50; i++)
@@ -193,17 +193,17 @@ void HashTableTst(void)
 typedef struct
 {
     LIST_ST list;
-    S32_T idx;
+    int32_t idx;
 }LIST_TST_ST;
 
 
-VOID_T ListTst(VOID_T)
+void ListTst(void)
 {
     LIST_ST list;
     LIST_TST_ST *pNode = NULL, *pN = NULL;
     ListInit(&list);
 
-    for(S32_T i = 0; i < 10; i++)
+    for(int32_t i = 0; i < 10; i++)
     {
         LIST_TST_ST *pNew = MmMngrMalloc(sizeof(LIST_TST_ST));
         pNew->idx = i;
@@ -257,16 +257,16 @@ VOID_T ListTst(VOID_T)
     
 }
 
-VOID_T mission(VOID_T *pArg)
+void mission(void *pArg)
 {
-    S32_T *pI = (S32_T *) pArg;
+    int32_t *pI = (int32_t *) pArg;
     LOGI("arg = %d\r\n", *pI);
 }
 
 
-VOID_T ThreadPoolTst(VOID_T)
+void ThreadPoolTst(void)
 {
-    static S32_T i = 0, iarr[100] = {0};
+    static int32_t i = 0, iarr[100] = {0};
     THREAD_POOL_ST *pTp = ThreadPoolCreate(100, 1024 * 3);
 
     for(i = 0; i < 10; i++)
@@ -278,7 +278,7 @@ VOID_T ThreadPoolTst(VOID_T)
     ThreadPoolDestory(pTp);
 }
 
-static VOID_T *threadTest(VOID_T *pArg)
+static void *threadTest(void *pArg)
 {
     (void) pArg;
     LOGI("Thread test \r\n");
@@ -288,8 +288,8 @@ static VOID_T *threadTest(VOID_T *pArg)
 
 int main(int argc, char **argv)
 {
-    (VOID_T) argc;
-    (VOID_T) argv;
+    (void) argc;
+    (void) argv;
     FILE_LOG_ATTR_ST log;
     FileLOGCreate((LOG_ATTR_ST *)&log, stdin, stdout);
     LOGInit((LOG_ATTR_ST *)&log);
@@ -302,7 +302,7 @@ int main(int argc, char **argv)
     LOGE("error log\r\n");
     LOGW("warning log\r\n");
 
-    S32_T i = 0;
+    int32_t i = 0;
     for(i = 0; i < 10; i++)
     {
         LOGI("for1 = %d\r\n", i);
@@ -320,7 +320,7 @@ int main(int argc, char **argv)
 
     ThreadPoolTst();
 
-    THREAD_T thread = ThreadCreate(threadTest, NULL, 1024, FALSE, 1, "aaa");
+    THREAD_T thread = ThreadCreate(threadTest, NULL, 1024, false, 1, "aaa");
     ThreadUsleep(1000);
     ThreadJoin(thread);
 

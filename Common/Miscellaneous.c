@@ -8,7 +8,7 @@
 #define __LIBEMBEDDEDVER (0x102)
 #endif
 
-U16_T GetLibEmbeddedBCDVer(VOID_T)
+uint16_t GetLibEmbeddedBCDVer(void)
 {
     return __LIBEMBEDDEDVER;
 }
@@ -18,10 +18,10 @@ U16_T GetLibEmbeddedBCDVer(VOID_T)
 #include <sys/time.h>
 #include <time.h>
 
-ATTRIBUTE_WEAK U64_T GetRealTickNs(VOID_T)
+ATTRIBUTE_WEAK uint64_t GetRealTickNs(void)
 {
     struct timespec ts;
-    U64_T ns = 0;
+    uint64_t ns = 0;
 
     clock_gettime(CLOCK_REALTIME, &ts);
 
@@ -30,10 +30,10 @@ ATTRIBUTE_WEAK U64_T GetRealTickNs(VOID_T)
     return ns;
 }
 
-ATTRIBUTE_WEAK U64_T GetMonotonicTickNs(VOID_T)
+ATTRIBUTE_WEAK uint64_t GetMonotonicTickNs(void)
 {
     struct timespec ts;
-    U64_T ns = 0;
+    uint64_t ns = 0;
 
     clock_gettime(CLOCK_MONOTONIC, &ts);
 
@@ -45,9 +45,9 @@ ATTRIBUTE_WEAK U64_T GetMonotonicTickNs(VOID_T)
 #elif defined(_WIN32)
 #include <Windows.h>
 
-ATTRIBUTE_WEAK U64_T GetRealTickNs(VOID_T)
+ATTRIBUTE_WEAK uint64_t GetRealTickNs(void)
 {
-    U64_T ns = 0;
+    uint64_t ns = 0;
     FILETIME ft;
     ULARGE_INTEGER ull;
 
@@ -57,17 +57,17 @@ ATTRIBUTE_WEAK U64_T GetRealTickNs(VOID_T)
     ull.HighPart = ft.dwHighDateTime;
 
     // Windows time stamp interval is 100ns, from 1601-1-1
-    const U64_T EPOCH = 116444736000000000ULL;
+    const uint64_t EPOCH = 116444736000000000ULL;
     ns = (ull.QuadPart - EPOCH) * 10; // convert to ns
     
     return ns;
 }
 
-ATTRIBUTE_WEAK U64_T GetMonotonicTickNs(VOID_T)
+ATTRIBUTE_WEAK uint64_t GetMonotonicTickNs(void)
 {
-    static S32_T first = 1;
+    static int32_t first = 1;
     static LARGE_INTEGER frequency;
-    static U64_T ns = 0;
+    static uint64_t ns = 0;
     LARGE_INTEGER count;
     
 
@@ -91,14 +91,14 @@ ATTRIBUTE_WEAK U64_T GetMonotonicTickNs(VOID_T)
 
 #else
 //rtos
-ATTRIBUTE_WEAK U64_T GetRealTickNs(VOID_T)
+ATTRIBUTE_WEAK uint64_t GetRealTickNs(void)
 {
     return 0;
 }
 
-ATTRIBUTE_WEAK U64_T GetMonotonicTickNs(VOID_T)
+ATTRIBUTE_WEAK uint64_t GetMonotonicTickNs(void)
 {
-    U64_T ns = 0;
+    uint64_t ns = 0;
 
     return ns;
 }

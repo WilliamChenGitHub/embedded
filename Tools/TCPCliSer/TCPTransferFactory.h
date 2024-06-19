@@ -8,7 +8,7 @@ typedef struct __TCPTransferFactory
 {
     TRANSFER_FACTORY_ST transferFacotry;
     SOCKET_T socket;
-    BOOL_T isClient;
+    bool isClient;
 }TCP_TRANSFER_FACTORY_ST;
 
 
@@ -16,7 +16,7 @@ typedef struct __TCPTransferFactory
 extern "C"{
 #endif
 
-VOID_T TCPTransferFactoryInit(TRANSFER_FACTORY_ST *pFact, SOCKET_T socket, BOOL_T isClient);
+void TCPTransferFactoryInit(TRANSFER_FACTORY_ST *pFact, SOCKET_T socket, bool isClient);
 
 
 #ifdef __cplusplus

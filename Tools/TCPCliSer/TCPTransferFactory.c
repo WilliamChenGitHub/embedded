@@ -33,7 +33,7 @@ TRANSFER_ST *TCPTransferCreate(TRANSFER_FACTORY_ST *pTransFactory)
 
 
 
-VOID_T TCPTransferFactoryInit(TRANSFER_FACTORY_ST *pFact, SOCKET_T socket, BOOL_T isClient)
+void TCPTransferFactoryInit(TRANSFER_FACTORY_ST *pFact, SOCKET_T socket, bool isClient)
 {
     TCP_TRANSFER_FACTORY_ST *pTCPTransferFactory = (TCP_TRANSFER_FACTORY_ST *)pFact;
 

@@ -165,7 +165,7 @@ TCP_SERVER_ST *TcpServerCreate(const char *ipaddr, const uint16_t port, COM_PACK
 {
     TCP_SERVER_ST *pTCPSer = NULL;
     struct epoll_event ev = {0};
-    U64_T on = 1;
+    uint64_t on = 1;
 
     pTCPSer = MmMngrMalloc(sizeof *pTCPSer);
     if(!pTCPSer)
@@ -186,7 +186,7 @@ TCP_SERVER_ST *TcpServerCreate(const char *ipaddr, const uint16_t port, COM_PACK
     setsockopt(pTCPSer->socket, SOL_SOCKET, SO_REUSEPORT, (void *)&on, sizeof(on));
     setsockopt(pTCPSer->socket, SOL_SOCKET, SO_REUSEADDR, (void *)&on, sizeof(on));
 
-    S32_T flags = fcntl(pTCPSer->socket, F_GETFL, 0);
+    int32_t flags = fcntl(pTCPSer->socket, F_GETFL, 0);
     if (flags == -1)
     {
         LOGE("Fcntl get failed\r\n");
@@ -210,15 +210,14 @@ TCP_SERVER_ST *TcpServerCreate(const char *ipaddr, const uint16_t port, COM_PACK
     {
         addr.sin_addr.s_addr = INADDR_ANY; // bind all network card ip
     }
-    addr.sin_port = htons(port);//把主机端口号转为网络端口号
-
+    addr.sin_port = htons(port);//把主机端口号转为网络端口�?
     if(bind(pTCPSer->socket, (struct sockaddr *)&addr, sizeof(addr)))//绑定ip和端口号
     {
         LOGE("bind error: %s\r\n", strerror(errno));
         goto err3;
     }
 
-    if(listen(pTCPSer->socket, 10))//监听套接字
+    if(listen(pTCPSer->socket, 10))//监听套接�?    
     {
         LOGE("listen error: %s\r\n", strerror(errno));
         goto err3;
@@ -289,7 +288,7 @@ err1:
     return NULL;
 }
 
-VOID_T TcpServerDestory(TCP_SERVER_ST *pTCPSer)
+void TcpServerDestory(TCP_SERVER_ST *pTCPSer)
 {
     pTCPSer->monitor = 0;
     ThreadPoolDestory(pTCPSer->pThP);

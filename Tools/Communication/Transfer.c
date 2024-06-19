@@ -1,7 +1,7 @@
 #include "Transfer.h"
 
 
-VOID_T TransferDeinitDef(TRANSFER_ST *pTrans)
+void TransferDeinitDef(TRANSFER_ST *pTrans)
 {
     MutexDestroy(pTrans->txMutex);
     SemDestroy(pTrans->rxEvent);
@@ -11,12 +11,12 @@ VOID_T TransferDeinitDef(TRANSFER_ST *pTrans)
 }
 
 
-S32_T TransferTxDef(TRANSFER_ST *pTrans, TRANSFER_BUF_ST *pBuf, S32_T totalLen)
+int32_t TransferTxDef(TRANSFER_ST *pTrans, TRANSFER_BUF_ST *pBuf, int32_t totalLen)
 {
-    S32_T ret = 0;
+    int32_t ret = 0;
     TRANSFER_BUF_ST *p = NULL;
 
-    (VOID_T) totalLen;
+    (void) totalLen;
     MutexLock(pTrans->txMutex);
     
     for(p = pBuf; p->bLen > 0; p++)
@@ -39,7 +39,7 @@ S32_T TransferTxDef(TRANSFER_ST *pTrans, TRANSFER_BUF_ST *pBuf, S32_T totalLen)
 
 
 // need release
-S32_T TransferReadRxDatDef(TRANSFER_ST *pTrans, VOID_T *pDat, S32_T len)
+int32_t TransferReadRxDatDef(TRANSFER_ST *pTrans, void *pDat, int32_t len)
 {
     if(0 == QueueMultRead(pTrans->pRxQueue, pDat, len))
     {
@@ -67,7 +67,7 @@ S32_T TransferReadRxDatDef(TRANSFER_ST *pTrans, VOID_T *pDat, S32_T len)
     return -1;
 }
 
-VOID_T TransferClrBufferDef(TRANSFER_ST *pTrans)
+void TransferClrBufferDef(TRANSFER_ST *pTrans)
 {
     QueueClear(pTrans->pRxQueue);
 
@@ -76,7 +76,7 @@ VOID_T TransferClrBufferDef(TRANSFER_ST *pTrans)
     MutexUnlock(pTrans->txMutex);
 }
 
-S32_T TransferInit(TRANSFER_ST *pTrans, S32_T rxBufSz, S32_T txBufSz)
+int32_t TransferInit(TRANSFER_ST *pTrans, int32_t rxBufSz, int32_t txBufSz)
 {
     static TRANSFER_VTBL_ST transferVtbl = 
     {
@@ -122,7 +122,7 @@ S32_T TransferInit(TRANSFER_ST *pTrans, S32_T rxBufSz, S32_T txBufSz)
         goto err4;
     }
 
-    pTrans->bInited = TRUE;
+    pTrans->bInited = true;
     return 0;
 
 
@@ -140,9 +140,9 @@ err1:
 }
 
 
-VOID_T TransferPrepareDeinit(TRANSFER_ST *pTrans)
+void TransferPrepareDeinit(TRANSFER_ST *pTrans)
 {
-    pTrans->bInited = FALSE;
+    pTrans->bInited = false;
     EventGeneration(pTrans->rxEvent);
     ThreadUsleep(1000 * 3); // wait using transfer thread exit
 }

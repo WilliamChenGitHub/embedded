@@ -29,7 +29,7 @@ static inline TRANSFER_ST *TransferCreate(TRANSFER_FACTORY_ST *pTransFactory)
     return pTransFactory->vPtr->pTransferCreate(pTransFactory);
 }
 
-static inline VOID_T TransferDestory(TRANSFER_ST *pTrans)
+static inline void TransferDestory(TRANSFER_ST *pTrans)
 {
     TransferDeinit(pTrans);
     MmMngrFree(pTrans);

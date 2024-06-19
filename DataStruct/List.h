@@ -1,7 +1,7 @@
 #ifndef __LIST_H__
 #define __LIST_H__
 
-#include "TypeDef.h"
+#include "EmbeddedDef.h"
 
 typedef struct __List
 {
@@ -15,12 +15,12 @@ extern "C"
 {
 #endif
 
-static inline VOID_T ListInit(LIST_ST *pList)
+static inline void ListInit(LIST_ST *pList)
 {
     pList->pNext = pList->pPrev = pList;
 }
 
-static inline VOID_T ListInsertFront(LIST_ST *pEntry, LIST_ST *pEntryI)
+static inline void ListInsertFront(LIST_ST *pEntry, LIST_ST *pEntryI)
 {
     pEntryI->pPrev = pEntry->pPrev;
     pEntryI->pNext = pEntry;
@@ -29,7 +29,7 @@ static inline VOID_T ListInsertFront(LIST_ST *pEntry, LIST_ST *pEntryI)
     pEntry->pPrev = pEntryI;
 }
 
-static inline VOID_T ListInsertBack(LIST_ST *pEntry, LIST_ST *pEntryI)
+static inline void ListInsertBack(LIST_ST *pEntry, LIST_ST *pEntryI)
 {
     pEntryI->pNext = pEntry->pNext;
     pEntryI->pPrev = pEntry;
@@ -39,13 +39,13 @@ static inline VOID_T ListInsertBack(LIST_ST *pEntry, LIST_ST *pEntryI)
 }
 
 
-static inline VOID_T ListDelet(LIST_ST *pEntry)
+static inline void ListDelet(LIST_ST *pEntry)
 {
     pEntry->pNext->pPrev = pEntry->pPrev;
     pEntry->pPrev->pNext = pEntry->pNext;
 }
 
-static inline VOID_T ListSwap(LIST_ST *pEntryA, LIST_ST *pEntryB)
+static inline void ListSwap(LIST_ST *pEntryA, LIST_ST *pEntryB)
 {
     if(pEntryA->pNext == pEntryB) // a right neighbour
     {
@@ -101,10 +101,10 @@ static inline VOID_T ListSwap(LIST_ST *pEntryA, LIST_ST *pEntryB)
     ListDelet((LIST_ST *)(entry))
 
 #define LIST_NEXT_ENTRY(entry)\
-        ((VOID_T *)(((LIST_ST *)(entry))->pNext))
+        ((void *)(((LIST_ST *)(entry))->pNext))
     
 #define LIST_PREV_ENTRY(entry)\
-        ((VOID_T *)(((LIST_ST *)(entry))->pPrev))
+        ((void *)(((LIST_ST *)(entry))->pPrev))
 
 
 #define LIST_FOREACH_FROM_HEAD(pEntry, pListHead) \

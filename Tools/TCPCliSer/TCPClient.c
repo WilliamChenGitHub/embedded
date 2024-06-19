@@ -2,28 +2,28 @@
 #include "MmMngr.h"
 #include "stdio.h"
 
-static BOOL_T isIPAddr(const S8_T *server)
+static bool isIPAddr(const int8_t *server)
 {
-    S32_T ip[4] = {-1, -1, -1, -1};
+    int32_t ip[4] = {-1, -1, -1, -1};
     
     sscanf(server, "%d.%d.%d.%d", &ip[0], &ip[1], &ip[2], &ip[3]);
 
     if(ip[0] > 255 || ip[0] < 0 || ip[1] > 255 || ip[1] < 0 || ip[2] >255 || ip[2] < 0 || ip[3] > 255 || ip[3] < 0) // is not ip addr
     {
-        return FALSE;
+        return false;
     }
     
-    return TRUE;
+    return true;
 }
 
 
 
 
-TCP_CLIENT_ST *TcpClientCreate(const S8_T *server, const U16_T port, COM_PACK_PARSE_FT pParseCb)
+TCP_CLIENT_ST *TcpClientCreate(const int8_t *server, const uint16_t port, COM_PACK_PARSE_FT pParseCb)
 {
     TCP_TRANSFER_FACTORY_ST tcpTransFact;
     TCP_CLIENT_ST *pTCPCli = NULL;
-    U64_T on = 1;
+    uint64_t on = 1;
 
     pTCPCli = MmMngrMalloc(sizeof *pTCPCli);
     if(!pTCPCli)
@@ -46,8 +46,7 @@ TCP_CLIENT_ST *TcpClientCreate(const S8_T *server, const U16_T port, COM_PACK_PA
     struct sockaddr_in addr;
     addr.sin_family = AF_INET;
     
-    addr.sin_port = htons(port);//把主机端口号转为网络端口号
-
+    addr.sin_port = htons(port);//把主机端口号转为网络端口�?
     if(isIPAddr(server))
     {
         addr.sin_addr.s_addr = inet_addr(server);
@@ -99,7 +98,7 @@ TCP_CLIENT_ST *TcpClientCreate(const S8_T *server, const U16_T port, COM_PACK_PA
 
 
 
-    S32_T flags = fcntl(pTCPCli->socket, F_GETFL, 0);
+    int32_t flags = fcntl(pTCPCli->socket, F_GETFL, 0);
     if (flags == -1)
     {
         LOGE("Fcntl get failed\r\n");

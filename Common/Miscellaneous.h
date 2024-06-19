@@ -1,18 +1,18 @@
 #ifndef __MISCELLANEOUS_H__
 #define __MISCELLANEOUS_H__
 
-#include "TypeDef.h"
+#include "EmbeddedDef.h"
 
 #ifdef __cplusplus
 extern "C" 
 {
 #endif
 
-U64_T GetRealTickNs(VOID_T);
+uint64_t GetRealTickNs(void);
 
-U64_T GetMonotonicTickNs(VOID_T);
+uint64_t GetMonotonicTickNs(void);
 
-U16_T GetLibEmbeddedBCDVer(VOID_T); // BCD code
+uint16_t GetLibEmbeddedBCDVer(void); // BCD code
 
 
 #ifdef __cplusplus

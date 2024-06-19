@@ -1,6 +1,6 @@
 #pragma once
 
-#include "TypeDef.h"
+#include "EmbeddedDef.h"
 #include "Thread.h"
 #include "List.h"
 
@@ -8,13 +8,13 @@
 #define MAX_ACTIVE_THREADS    1000 // The number of threads that can run simultaneously
 
 
-typedef VOID_T (*THREAD_POOL_MISSION)(VOID_T *pArg);
+typedef void (*THREAD_POOL_MISSION)(void *pArg);
 
 typedef struct __mission
 {
     LIST_ST list;
     THREAD_POOL_MISSION pMission;
-    VOID_T *pArg;
+    void *pArg;
 }MISSION_ATTR_ST;
 
 typedef struct __threadPool
@@ -23,11 +23,11 @@ typedef struct __threadPool
     MUTEX_T mutex;
     SEM_T sem;
 
-    S32_T nbOfThreads;
+    int32_t nbOfThreads;
     
-    S32_T wMissions; // number of waiting missions
-    S32_T rMissions; // number of running missions
-    S32_T exit;
+    int32_t wMissions; // number of waiting missions
+    int32_t rMissions; // number of running missions
+    int32_t exit;
 
     THREAD_T *pTidArr;
 }THREAD_POOL_ST;
@@ -36,11 +36,11 @@ typedef struct __threadPool
 extern "C"{
 #endif
 
-THREAD_POOL_ST *ThreadPoolCreate(S32_T nbOfThreads, S32_T stackSzOfTh);
+THREAD_POOL_ST *ThreadPoolCreate(int32_t nbOfThreads, int32_t stackSzOfTh);
 
-S32_T ThreadPoolDispatchMission(THREAD_POOL_ST *pPool, THREAD_POOL_MISSION pMission, VOID_T *pArg);
+int32_t ThreadPoolDispatchMission(THREAD_POOL_ST *pPool, THREAD_POOL_MISSION pMission, void *pArg);
 
-VOID_T ThreadPoolDestory(THREAD_POOL_ST *pPool);
+void ThreadPoolDestory(THREAD_POOL_ST *pPool);
 
 
 

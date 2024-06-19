@@ -1,7 +1,7 @@
 #ifndef __QUEUE_H__
 #define __QUEUE_H__
 
-#include "TypeDef.h"
+#include "EmbeddedDef.h"
 #include "MmMngr.h"
 #include <string.h>
 
@@ -11,25 +11,25 @@
 
 typedef struct __Queue
 {
-    S32_T elemSz;
-    S32_T wIdx;
-    S32_T rIdx;
-    S32_T nbOfElem;
+    int32_t elemSz;
+    int32_t wIdx;
+    int32_t rIdx;
+    int32_t nbOfElem;
 
 #if MAX_USED_STATISTICS
-    S32_T maxUsd;
+    int32_t maxUsd;
 #endif
 
 #if OVERFLOW_FLAG_STATISTICS
-    S32_T isOverflow;
-    U64_T losted;
+    int32_t isOverflow;
+    uint64_t losted;
 #endif
 
 #if TOTAL_POP_PUSH_STATISTICS
-    U64_T totalPushed;
-    U64_T totalPoped;
+    uint64_t totalPushed;
+    uint64_t totalPoped;
 #endif
-    U8_T buf[0];
+    uint8_t buf[0];
 }QUEUE_ST;
 
 
@@ -38,12 +38,12 @@ extern "C"
 {
 #endif
 
-static inline S32_T CalcQueueFreeSz(QUEUE_ST *pQueue)
+static inline int32_t CalcQueueFreeSz(QUEUE_ST *pQueue)
 {
     return (pQueue->rIdx - pQueue->wIdx - 1 + pQueue->nbOfElem) % pQueue->nbOfElem;
 }
 
-static inline S32_T CalcQueueDataSz(QUEUE_ST * pQueue)
+static inline int32_t CalcQueueDataSz(QUEUE_ST * pQueue)
 {
     return pQueue->nbOfElem - 1 - (pQueue->rIdx - pQueue->wIdx - 1 + pQueue->nbOfElem) % pQueue->nbOfElem;
 }
@@ -51,7 +51,7 @@ static inline S32_T CalcQueueDataSz(QUEUE_ST * pQueue)
 
 // read an object from queue tail
 // need release
-static inline S32_T QueueReadSingleObj(QUEUE_ST * pQueue, VOID_T **pObj)
+static inline int32_t QueueReadSingleObj(QUEUE_ST * pQueue, void **pObj)
 {
     if(1 > CalcQueueDataSz(pQueue))
     {
@@ -63,7 +63,7 @@ static inline S32_T QueueReadSingleObj(QUEUE_ST * pQueue, VOID_T **pObj)
 }
 
 // release an object of the queue tail
-static inline S32_T QueueReleaseSingleObj(QUEUE_ST * pQueue)
+static inline int32_t QueueReleaseSingleObj(QUEUE_ST * pQueue)
 {
     if(1 > CalcQueueDataSz(pQueue))
     {
@@ -83,9 +83,9 @@ static inline S32_T QueueReleaseSingleObj(QUEUE_ST * pQueue)
 
 //pop an object from queue tail
 //do not need release
-static inline S32_T QueuePopSingleObj(QUEUE_ST * pQueue, VOID_T *pObj)
+static inline int32_t QueuePopSingleObj(QUEUE_ST * pQueue, void *pObj)
 {
-    U8_T *pBuf = NULL;
+    uint8_t *pBuf = NULL;
 
     if(CalcQueueDataSz(pQueue) == 0)
     {
@@ -107,10 +107,10 @@ static inline S32_T QueuePopSingleObj(QUEUE_ST * pQueue, VOID_T *pObj)
 
 //pop multiple objects from queue tail
 //do not need release
-static inline S32_T QueueMultPop(QUEUE_ST * pQueue, VOID_T *pObjs, S32_T popLen)
+static inline int32_t QueueMultPop(QUEUE_ST * pQueue, void *pObjs, int32_t popLen)
 {
-    U8_T *pBuf= NULL;
-    S32_T temp = 0;
+    uint8_t *pBuf= NULL;
+    int32_t temp = 0;
 
     if(CalcQueueDataSz(pQueue) < popLen)
     {
@@ -129,7 +129,7 @@ static inline S32_T QueueMultPop(QUEUE_ST * pQueue, VOID_T *pObjs, S32_T popLen)
     {
         memcpy(pObjs, pBuf, temp * pQueue->elemSz);
 
-        pObjs = (U8_T *)pObjs + temp * pQueue->elemSz;
+        pObjs = (uint8_t *)pObjs + temp * pQueue->elemSz;
         temp = popLen - temp;
         
         memcpy(pObjs, pQueue->buf, temp * pQueue->elemSz);
@@ -147,10 +147,10 @@ static inline S32_T QueueMultPop(QUEUE_ST * pQueue, VOID_T *pObjs, S32_T popLen)
 
 // read multiple objects from queue tail
 // need release
-static inline S32_T QueueMultRead(QUEUE_ST * pQueue, VOID_T *pObjs, S32_T len)
+static inline int32_t QueueMultRead(QUEUE_ST * pQueue, void *pObjs, int32_t len)
 {
-    U8_T *pBuf = NULL;
-    S32_T temp = 0;
+    uint8_t *pBuf = NULL;
+    int32_t temp = 0;
 
     if(CalcQueueDataSz(pQueue) < len)
     {
@@ -169,7 +169,7 @@ static inline S32_T QueueMultRead(QUEUE_ST * pQueue, VOID_T *pObjs, S32_T len)
     {
         memcpy(pObjs, pBuf, temp * pQueue->elemSz);
 
-        pObjs = (U8_T *)pObjs + temp * pQueue->elemSz;
+        pObjs = (uint8_t *)pObjs + temp * pQueue->elemSz;
         temp = len - temp;
         
         memcpy(pObjs,  pQueue->buf, temp * pQueue->elemSz);
@@ -179,7 +179,7 @@ static inline S32_T QueueMultRead(QUEUE_ST * pQueue, VOID_T *pObjs, S32_T len)
 }
 
 // release multiple objects of the queue tail
-static inline VOID_T QueueReleaseMultObj(QUEUE_ST * pQueue, S32_T len)
+static inline void QueueReleaseMultObj(QUEUE_ST * pQueue, int32_t len)
 {
     pQueue->rIdx = (pQueue->rIdx + len )% pQueue->nbOfElem;
     
@@ -191,9 +191,9 @@ static inline VOID_T QueueReleaseMultObj(QUEUE_ST * pQueue, S32_T len)
 
 
 // push an object to queue head
-static inline S32_T QueuePushSingleObj(QUEUE_ST * pQueue,VOID_T *pObj)
+static inline int32_t QueuePushSingleObj(QUEUE_ST * pQueue,void *pObj)
 {
-    U8_T *pBuf = NULL;
+    uint8_t *pBuf = NULL;
 
     if(CalcQueueFreeSz(pQueue) == 0)
     {
@@ -219,7 +219,7 @@ static inline S32_T QueuePushSingleObj(QUEUE_ST * pQueue,VOID_T *pObj)
 #endif
 
 #if MAX_USED_STATISTICS
-    S32_T datLen = CalcQueueDataSz(pQueue);
+    int32_t datLen = CalcQueueDataSz(pQueue);
     if(datLen > pQueue->maxUsd)
     {
         pQueue->maxUsd = datLen;
@@ -230,10 +230,10 @@ static inline S32_T QueuePushSingleObj(QUEUE_ST * pQueue,VOID_T *pObj)
 
 
 // push multiple objects to the queue head
-static inline S32_T QueueMultPush(QUEUE_ST * pQueue, VOID_T *pObjs, S32_T pushLen)
+static inline int32_t QueueMultPush(QUEUE_ST * pQueue, void *pObjs, int32_t pushLen)
 {
-    U8_T *pBuf= NULL;
-    S32_T temp = 0;
+    uint8_t *pBuf= NULL;
+    int32_t temp = 0;
 
     if(CalcQueueFreeSz(pQueue) < pushLen)
     {
@@ -256,7 +256,7 @@ static inline S32_T QueueMultPush(QUEUE_ST * pQueue, VOID_T *pObjs, S32_T pushLe
     {
         memcpy(pBuf, pObjs, temp * pQueue->elemSz);
 
-        pObjs = (U8_T *)pObjs + temp * pQueue->elemSz;
+        pObjs = (uint8_t *)pObjs + temp * pQueue->elemSz;
         temp = pushLen - temp;
         
         memcpy(pQueue->buf, pObjs, temp * pQueue->elemSz); // copy left
@@ -269,7 +269,7 @@ static inline S32_T QueueMultPush(QUEUE_ST * pQueue, VOID_T *pObjs, S32_T pushLe
 #endif
 
 #if MAX_USED_STATISTICS
-    S32_T datLen = CalcQueueDataSz(pQueue);
+    int32_t datLen = CalcQueueDataSz(pQueue);
     if(datLen > pQueue->maxUsd)
     {
         pQueue->maxUsd = datLen;
@@ -280,7 +280,7 @@ static inline S32_T QueueMultPush(QUEUE_ST * pQueue, VOID_T *pObjs, S32_T pushLe
 }
 
 
-static inline S32_T QueueGetMaxUsed(QUEUE_ST * pQueue)
+static inline int32_t QueueGetMaxUsed(QUEUE_ST * pQueue)
 {
 #if MAX_USED_STATISTICS
     return pQueue->maxUsd;
@@ -290,7 +290,7 @@ static inline S32_T QueueGetMaxUsed(QUEUE_ST * pQueue)
 }
 
 
-static inline U64_T QueueGetTotalPushed(QUEUE_ST * pQueue)
+static inline uint64_t QueueGetTotalPushed(QUEUE_ST * pQueue)
 {
 #if TOTAL_POP_PUSH_STATISTICS
     return pQueue->totalPushed;
@@ -299,7 +299,7 @@ static inline U64_T QueueGetTotalPushed(QUEUE_ST * pQueue)
 #endif
 }
 
-static inline U64_T QueueGetTotalPoped(QUEUE_ST * pQueue)
+static inline uint64_t QueueGetTotalPoped(QUEUE_ST * pQueue)
 {
 #if TOTAL_POP_PUSH_STATISTICS
     return pQueue->totalPoped;
@@ -308,16 +308,16 @@ static inline U64_T QueueGetTotalPoped(QUEUE_ST * pQueue)
 #endif
 }
 
-static inline BOOL_T QueueIsOverflow(QUEUE_ST * pQueue)
+static inline bool QueueIsOverflow(QUEUE_ST * pQueue)
 {
 #if OVERFLOW_FLAG_STATISTICS
     return pQueue->isOverflow;
 #else
-    return FALSE;
+    return false;
 #endif
 }
 
-static inline U64_T QueueGetLosted(QUEUE_ST * pQueue)
+static inline uint64_t QueueGetLosted(QUEUE_ST * pQueue)
 {
 #if OVERFLOW_FLAG_STATISTICS
     return pQueue->losted;
@@ -327,20 +327,20 @@ static inline U64_T QueueGetLosted(QUEUE_ST * pQueue)
 }
 
 // malloc queue mem
-QUEUE_ST * QueueCreate(S32_T elemSz,S32_T nbOfElem);
+QUEUE_ST * QueueCreate(int32_t elemSz,int32_t nbOfElem);
 
 // free queue mem
-S32_T QueueDestroy(QUEUE_ST *pQueue);
+int32_t QueueDestroy(QUEUE_ST *pQueue);
 
 
 //do not malloc queue mem
-QUEUE_ST * QueueInit(S32_T elemSz, S32_T nbOfElem, QUEUE_ST *pQueue);
+QUEUE_ST * QueueInit(int32_t elemSz, int32_t nbOfElem, QUEUE_ST *pQueue);
 
 //do not free queue mem
-S32_T QueueDeinit(QUEUE_ST * pQueue);
+int32_t QueueDeinit(QUEUE_ST * pQueue);
 
 
-S32_T QueueClear(QUEUE_ST * pQueue);
+int32_t QueueClear(QUEUE_ST * pQueue);
 
 
 #ifdef __cplusplus

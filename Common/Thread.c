@@ -8,7 +8,7 @@
 #include <semaphore.h>
 #include <errno.h>
 
-ATTRIBUTE_WEAK SEM_T SemCreate(VOID_T)
+ATTRIBUTE_WEAK SEM_T SemCreate(void)
 {
     SEM_T sem = NULL;
     sem = MmMngrMalloc(sizeof(sem_t));
@@ -22,18 +22,18 @@ ATTRIBUTE_WEAK SEM_T SemCreate(VOID_T)
     return sem;
 }
 
-ATTRIBUTE_WEAK VOID_T SemDestroy(SEM_T sem)
+ATTRIBUTE_WEAK void SemDestroy(SEM_T sem)
 {
     sem_destroy(sem);
     MmMngrFree(sem);
 }
 
 
-ATTRIBUTE_WEAK S32_T SemTimedWait(SEM_T sem, S32_T toMs)
+ATTRIBUTE_WEAK int32_t SemTimedWait(SEM_T sem, int32_t toMs)
 {
     struct timespec ts;
-    S32_T semWaitRet = 0;
-    U64_T ns = 0;
+    int32_t semWaitRet = 0;
+    uint64_t ns = 0;
 
     if(0 > toMs)
     {
@@ -68,7 +68,7 @@ ATTRIBUTE_WEAK S32_T SemTimedWait(SEM_T sem, S32_T toMs)
     return 0;
 }
 
-ATTRIBUTE_WEAK VOID_T SemPost(SEM_T sem)
+ATTRIBUTE_WEAK void SemPost(SEM_T sem)
 {
     sem_post(sem);
 }
@@ -78,10 +78,10 @@ typedef struct
 {
     pthread_mutex_t mutex;
     pthread_cond_t cond;
-    S32_T eventFlg;
+    int32_t eventFlg;
 }EVENT_ATTR_ST;
 
-ATTRIBUTE_WEAK EVENT_T EventCreate(VOID_T)
+ATTRIBUTE_WEAK EVENT_T EventCreate(void)
 {
     EVENT_ATTR_ST *pEventAttr = MmMngrMalloc(sizeof(*pEventAttr));
 
@@ -115,7 +115,7 @@ err1:
     return NULL;
 }
 
-ATTRIBUTE_WEAK VOID_T EventDestroy(EVENT_T event)
+ATTRIBUTE_WEAK void EventDestroy(EVENT_T event)
 {
     EVENT_ATTR_ST *pEventAttr = (EVENT_ATTR_ST *)event;
 
@@ -124,7 +124,7 @@ ATTRIBUTE_WEAK VOID_T EventDestroy(EVENT_T event)
     MmMngrFree(pEventAttr);
 }
 
-ATTRIBUTE_WEAK VOID_T EventGeneration(EVENT_T event)
+ATTRIBUTE_WEAK void EventGeneration(EVENT_T event)
 {
     EVENT_ATTR_ST *pEventAttr = (EVENT_ATTR_ST *)event;
 
@@ -134,12 +134,12 @@ ATTRIBUTE_WEAK VOID_T EventGeneration(EVENT_T event)
     pthread_mutex_unlock(&pEventAttr->mutex);
 }
 
-ATTRIBUTE_WEAK S32_T EventTimedWait(EVENT_T event, S32_T toMs)
+ATTRIBUTE_WEAK int32_t EventTimedWait(EVENT_T event, int32_t toMs)
 {
     EVENT_ATTR_ST *pEventAttr = (EVENT_ATTR_ST *)event;
     struct timespec ts;
-    S32_T ret = 0;
-    U64_T ns = 0;
+    int32_t ret = 0;
+    uint64_t ns = 0;
 
     if(0 > toMs)
     {
@@ -180,7 +180,7 @@ ATTRIBUTE_WEAK S32_T EventTimedWait(EVENT_T event, S32_T toMs)
 }
 
 
-ATTRIBUTE_WEAK MUTEX_T MutexCreate(VOID_T)
+ATTRIBUTE_WEAK MUTEX_T MutexCreate(void)
 {
     MUTEX_T mutex = MmMngrMalloc(sizeof(pthread_mutex_t));
     if(mutex && pthread_mutex_init(mutex, NULL))
@@ -192,18 +192,18 @@ ATTRIBUTE_WEAK MUTEX_T MutexCreate(VOID_T)
 }
 
 
-ATTRIBUTE_WEAK VOID_T MutexDestroy(MUTEX_T    mutex)
+ATTRIBUTE_WEAK void MutexDestroy(MUTEX_T    mutex)
 {
     pthread_mutex_destroy(mutex);
     MmMngrFree(mutex);
 }
 
-ATTRIBUTE_WEAK VOID_T MutexLock(MUTEX_T mutex)
+ATTRIBUTE_WEAK void MutexLock(MUTEX_T mutex)
 {
     pthread_mutex_lock(mutex);
 }
 
-ATTRIBUTE_WEAK VOID_T MutexUnlock(MUTEX_T mutex)
+ATTRIBUTE_WEAK void MutexUnlock(MUTEX_T mutex)
 {
     pthread_mutex_unlock(mutex);
 }
@@ -213,13 +213,13 @@ typedef struct
 {
     pthread_t threadId;
     THREAD_FUNC_FT pFunc;
-    S8_T name[24];
-    BOOL_T isDetached;
-    VOID_T *pUsrData;
+    int8_t name[24];
+    bool isDetached;
+    void *pUsrData;
 }THREAD_ATTR_LINUX_ST;
 
 
-static VOID_T *ThreadFunc(VOID_T *argument)
+static void *ThreadFunc(void *argument)
 {
     THREAD_ATTR_LINUX_ST *pThreadAttr = (THREAD_ATTR_LINUX_ST *)argument;
     pthread_setname_np(pthread_self(), pThreadAttr->name);
@@ -234,14 +234,14 @@ static VOID_T *ThreadFunc(VOID_T *argument)
     return NULL;
 }
 
-ATTRIBUTE_WEAK THREAD_T ThreadCreate(THREAD_FUNC_FT pFunc, VOID_T *pArg, U32_T stackSz, BOOL_T isDetached, U32_T priority, S8_T *name)
+ATTRIBUTE_WEAK THREAD_T ThreadCreate(THREAD_FUNC_FT pFunc, void *pArg, uint32_t stackSz, bool isDetached, uint32_t priority, int8_t *name)
 {
     THREAD_ATTR_LINUX_ST *pThreadAttr = MmMngrMalloc(sizeof(THREAD_ATTR_LINUX_ST));
     pthread_attr_t thAttr = {0};
     
     struct sched_param priParam;
     
-    S32_T ret = 0;
+    int32_t ret = 0;
 
     if(!pThreadAttr)
     {
@@ -286,14 +286,14 @@ ATTRIBUTE_WEAK THREAD_T ThreadCreate(THREAD_FUNC_FT pFunc, VOID_T *pArg, U32_T s
     return (THREAD_T)pThreadAttr;
 }
 
-ATTRIBUTE_WEAK VOID_T ThreadJoin(THREAD_T thread)
+ATTRIBUTE_WEAK void ThreadJoin(THREAD_T thread)
 {
     THREAD_ATTR_LINUX_ST *pThreadAttr = (THREAD_ATTR_LINUX_ST *)thread;
     pthread_join(pThreadAttr->threadId, NULL);
     MmMngrFree(thread);
 }
 
-ATTRIBUTE_WEAK VOID_T ThreadUsleep(U32_T us)
+ATTRIBUTE_WEAK void ThreadUsleep(uint32_t us)
 {
     usleep(us);
 }
@@ -302,20 +302,20 @@ ATTRIBUTE_WEAK VOID_T ThreadUsleep(U32_T us)
 #elif defined(_WIN32)  
 #include <Windows.h>
 
-ATTRIBUTE_WEAK SEM_T SemCreate(VOID_T)
+ATTRIBUTE_WEAK SEM_T SemCreate(void)
 {
     return CreateSemaphore(NULL, 0, 0x7FFFFFFF, NULL);
 }
 
-ATTRIBUTE_WEAK VOID_T SemDestroy(SEM_T sem)
+ATTRIBUTE_WEAK void SemDestroy(SEM_T sem)
 {
     CloseHandle(sem);
 }
 
 
-ATTRIBUTE_WEAK S32_T SemTimedWait(SEM_T sem, S32_T toMs)
+ATTRIBUTE_WEAK int32_t SemTimedWait(SEM_T sem, int32_t toMs)
 {
-    S32_T semWaitRet = 0;
+    int32_t semWaitRet = 0;
 
     if (0 > toMs)
     {
@@ -341,33 +341,33 @@ ATTRIBUTE_WEAK S32_T SemTimedWait(SEM_T sem, S32_T toMs)
     }
 }
 
-ATTRIBUTE_WEAK VOID_T SemPost(SEM_T sem)
+ATTRIBUTE_WEAK void SemPost(SEM_T sem)
 {
     ReleaseSemaphore(sem, 1, NULL);
 }
 
 
-ATTRIBUTE_WEAK EVENT_T EventCreate(VOID_T)
+ATTRIBUTE_WEAK EVENT_T EventCreate(void)
 {
     HANDLE event;
-    event = CreateEvent(NULL, FALSE, FALSE, NULL);
+    event = CreateEvent(NULL, false, false, NULL);
     //ResetEvent(&event);
     return (EVENT_T)event;
 }
 
-ATTRIBUTE_WEAK VOID_T EventDestroy(EVENT_T event)
+ATTRIBUTE_WEAK void EventDestroy(EVENT_T event)
 {
     CloseHandle(event);
 }
 
-ATTRIBUTE_WEAK VOID_T EventGeneration(EVENT_T event)
+ATTRIBUTE_WEAK void EventGeneration(EVENT_T event)
 {
     SetEvent(event);
 }
 
-ATTRIBUTE_WEAK S32_T EventTimedWait(EVENT_T event, S32_T toMs)
+ATTRIBUTE_WEAK int32_t EventTimedWait(EVENT_T event, int32_t toMs)
 {
-    S32_T waitRet = 0;
+    int32_t waitRet = 0;
 
     if (0 > toMs)
     {
@@ -394,7 +394,7 @@ ATTRIBUTE_WEAK S32_T EventTimedWait(EVENT_T event, S32_T toMs)
 }
 
 
-ATTRIBUTE_WEAK MUTEX_T MutexCreate(VOID_T)
+ATTRIBUTE_WEAK MUTEX_T MutexCreate(void)
 {
     MUTEX_T mutex = MmMngrMalloc(sizeof(CRITICAL_SECTION));
 
@@ -407,17 +407,17 @@ ATTRIBUTE_WEAK MUTEX_T MutexCreate(VOID_T)
 }
 
 
-ATTRIBUTE_WEAK VOID_T MutexDestroy(MUTEX_T    mutex)
+ATTRIBUTE_WEAK void MutexDestroy(MUTEX_T    mutex)
 {
     DeleteCriticalSection(mutex);
 }
 
-ATTRIBUTE_WEAK VOID_T MutexLock(MUTEX_T mutex)
+ATTRIBUTE_WEAK void MutexLock(MUTEX_T mutex)
 {
     EnterCriticalSection(mutex);
 }
 
-ATTRIBUTE_WEAK VOID_T MutexUnlock(MUTEX_T mutex)
+ATTRIBUTE_WEAK void MutexUnlock(MUTEX_T mutex)
 {
     LeaveCriticalSection(mutex);
 }
@@ -428,9 +428,9 @@ typedef struct
     HANDLE hThread;
     DWORD iThread;
     THREAD_FUNC_FT pFunc;
-    S8_T name[24];
-    BOOL_T isDetached;
-    VOID_T* pUsrData;
+    int8_t name[24];
+    bool isDetached;
+    void* pUsrData;
 }THREAD_ATTR_WINDOWS_ST;
 
 
@@ -448,11 +448,11 @@ static DWORD WINAPI ThreadFunc(LPVOID argument)
     ExitThread(0);
 }
 
-ATTRIBUTE_WEAK THREAD_T ThreadCreate(THREAD_FUNC_FT pFunc, VOID_T* pArg, U32_T stackSz, BOOL_T isDetached, U32_T priority, S8_T* name)
+ATTRIBUTE_WEAK THREAD_T ThreadCreate(THREAD_FUNC_FT pFunc, void* pArg, uint32_t stackSz, bool isDetached, uint32_t priority, int8_t* name)
 {
     THREAD_ATTR_WINDOWS_ST* pThreadAttr = NULL;
 
-    (VOID_T) priority;
+    (void) priority;
 
     pThreadAttr = MmMngrMalloc(sizeof(THREAD_ATTR_WINDOWS_ST));
 
@@ -492,7 +492,7 @@ err1:
     return NULL;
 }
 
-ATTRIBUTE_WEAK VOID_T ThreadJoin(THREAD_T thread)
+ATTRIBUTE_WEAK void ThreadJoin(THREAD_T thread)
 {
     THREAD_ATTR_WINDOWS_ST* pThreadAttr = (THREAD_ATTR_WINDOWS_ST*)thread;
     WaitForSingleObject(pThreadAttr->hThread, INFINITE);
@@ -500,12 +500,12 @@ ATTRIBUTE_WEAK VOID_T ThreadJoin(THREAD_T thread)
     MmMngrFree(thread);
 }
 
-ATTRIBUTE_WEAK VOID_T ThreadUsleep(U32_T us)
+ATTRIBUTE_WEAK void ThreadUsleep(uint32_t us)
 {
     Sleep(us / 1000);
 }
 
-ATTRIBUTE_WEAK VOID_T ThreadPostMsg(THREAD_T thread, U32_T msg)
+ATTRIBUTE_WEAK void ThreadPostMsg(THREAD_T thread, uint32_t msg)
 {
     THREAD_ATTR_WINDOWS_ST* pThreadAttr = (THREAD_ATTR_WINDOWS_ST*)thread;
     PostThreadMessage(pThreadAttr->iThread, msg, 0, 0);
@@ -523,36 +523,36 @@ ATTRIBUTE_WEAK VOID_T ThreadPostMsg(THREAD_T thread, U32_T msg)
 typedef struct
 {
     osMutexId_t mutex;
-    S32_T sem;
+    int32_t sem;
 }SEM_ATTR_T;
 
-ATTRIBUTE_WEAK SEM_T SemCreate(VOID_T)
+ATTRIBUTE_WEAK SEM_T SemCreate(void)
 {
 
     return NULL;
 }
 
-ATTRIBUTE_WEAK VOID_T SemDestroy(SEM_T sem)
+ATTRIBUTE_WEAK void SemDestroy(SEM_T sem)
 {
-    (VOID_T) sem;
+    (void) sem;
 }
 
-ATTRIBUTE_WEAK S32_T SemTimedWait(SEM_T sem, S32_T toMs)
+ATTRIBUTE_WEAK int32_t SemTimedWait(SEM_T sem, int32_t toMs)
 {
-    (VOID_T) sem;
-    (VOID_T) toMs;
+    (void) sem;
+    (void) toMs;
     return 0;
 }
 
-ATTRIBUTE_WEAK VOID_T SemPost(SEM_T sem)
+ATTRIBUTE_WEAK void SemPost(SEM_T sem)
 {
-    (VOID_T) sem;
+    (void) sem;
 }
 
 
 #define EVT_DEFT 0x00000001
 
-ATTRIBUTE_WEAK EVENT_T EventCreate(VOID_T)
+ATTRIBUTE_WEAK EVENT_T EventCreate(void)
 {
     osEventFlagsId_t event = NULL;
 
@@ -561,19 +561,19 @@ ATTRIBUTE_WEAK EVENT_T EventCreate(VOID_T)
     return (EVENT_T)event;
 }
 
-ATTRIBUTE_WEAK VOID_T EventDestroy(EVENT_T event)
+ATTRIBUTE_WEAK void EventDestroy(EVENT_T event)
 {
     osEventFlagsDelete((osEventFlagsId_t *)event);
 }
 
-ATTRIBUTE_WEAK VOID_T EventGeneration(EVENT_T event)
+ATTRIBUTE_WEAK void EventGeneration(EVENT_T event)
 {
     osEventFlagsSet((osEventFlagsId_t *)event, EVT_DEFT);
 }
 
-ATTRIBUTE_WEAK S32_T EventTimedWait(EVENT_T event, S32_T toMs)
+ATTRIBUTE_WEAK int32_t EventTimedWait(EVENT_T event, int32_t toMs)
 {
-    S32_T ret = 0;
+    int32_t ret = 0;
 
     if(0 > toMs)
     {
@@ -588,7 +588,7 @@ ATTRIBUTE_WEAK S32_T EventTimedWait(EVENT_T event, S32_T toMs)
     {
         return 0;
     }
-    else if(osFlagsErrorTimeout == (U32_T)ret)
+    else if(osFlagsErrorTimeout == (uint32_t)ret)
     {
         return RESULT_ERR_TIME_OUT;
     }
@@ -599,7 +599,7 @@ ATTRIBUTE_WEAK S32_T EventTimedWait(EVENT_T event, S32_T toMs)
 }
 
 
-ATTRIBUTE_WEAK MUTEX_T MutexCreate(VOID_T)
+ATTRIBUTE_WEAK MUTEX_T MutexCreate(void)
 {
     osMutexId_t mutex = NULL;
 
@@ -609,17 +609,17 @@ ATTRIBUTE_WEAK MUTEX_T MutexCreate(VOID_T)
 }
 
 
-ATTRIBUTE_WEAK VOID_T MutexDestroy(MUTEX_T    mutex)
+ATTRIBUTE_WEAK void MutexDestroy(MUTEX_T    mutex)
 {
     osMutexDelete((osMutexId_t *)mutex);
 }
 
-ATTRIBUTE_WEAK VOID_T MutexLock(MUTEX_T mutex)
+ATTRIBUTE_WEAK void MutexLock(MUTEX_T mutex)
 {
     osMutexAcquire((osMutexId_t *)mutex, osWaitForever);
 }
 
-ATTRIBUTE_WEAK VOID_T MutexUnlock(MUTEX_T mutex)
+ATTRIBUTE_WEAK void MutexUnlock(MUTEX_T mutex)
 {
     osMutexRelease((osMutexId_t *)mutex);
 }
@@ -629,12 +629,12 @@ typedef struct
 {
     osThreadId_t threadId;
     THREAD_FUNC_FT pFunc;
-    S8_T name[24];
-    BOOL_T isDetached;
-    VOID_T *pUsrData;
+    int8_t name[24];
+    bool isDetached;
+    void *pUsrData;
 }THREAD_ATTR_RTOS_ST;
 
-static VOID_T ThreadFunc(VOID_T *argument)
+static void ThreadFunc(void *argument)
 {
     THREAD_ATTR_RTOS_ST *pThreadAttr = (THREAD_ATTR_RTOS_ST *)argument;
 
@@ -647,7 +647,7 @@ static VOID_T ThreadFunc(VOID_T *argument)
     osThreadExit();
 }
 
-ATTRIBUTE_WEAK THREAD_T ThreadCreate(THREAD_FUNC_FT pFunc, VOID_T *pArg, U32_T stackSz, BOOL_T isDetached, U32_T priority, S8_T *name)
+ATTRIBUTE_WEAK THREAD_T ThreadCreate(THREAD_FUNC_FT pFunc, void *pArg, uint32_t stackSz, bool isDetached, uint32_t priority, int8_t *name)
 {
     THREAD_ATTR_RTOS_ST *pThread = MmMngrMalloc(sizeof(THREAD_ATTR_RTOS_ST));
     osThreadAttr_t threadAttr = {0};
@@ -680,7 +680,7 @@ ATTRIBUTE_WEAK THREAD_T ThreadCreate(THREAD_FUNC_FT pFunc, VOID_T *pArg, U32_T s
     return (THREAD_T)pThread;
 }
 
-ATTRIBUTE_WEAK VOID_T ThreadJoin(THREAD_T thread)
+ATTRIBUTE_WEAK void ThreadJoin(THREAD_T thread)
 {
     THREAD_ATTR_RTOS_ST *pThread = (THREAD_ATTR_RTOS_ST *) thread;
 
@@ -688,7 +688,7 @@ ATTRIBUTE_WEAK VOID_T ThreadJoin(THREAD_T thread)
     MmMngrFree(thread);
 }
 
-ATTRIBUTE_WEAK VOID_T ThreadUsleep(U32_T us)
+ATTRIBUTE_WEAK void ThreadUsleep(uint32_t us)
 {
     osDelay((us + 999) / 1000);
 }

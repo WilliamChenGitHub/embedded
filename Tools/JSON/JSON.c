@@ -11,7 +11,7 @@ Date: 2022/10/12
 */
 
 
-JSON_OBJ_ST *JSONCreateObj(JSON_VAR_TP_ET tp, S32_T sz, VOID_T *data, S8_T * name)
+JSON_OBJ_ST *JSONCreateObj(JSON_VAR_TP_ET tp, int32_t sz, void *data, int8_t * name)
 {
     JSON_OBJ_ST *pObj = MmMngrMalloc(sizeof(*pObj) + sz);
     memset(pObj, 0, sizeof(*pObj) + sz);
@@ -40,7 +40,7 @@ JSON_OBJ_ST *JSONCreateObj(JSON_VAR_TP_ET tp, S32_T sz, VOID_T *data, S8_T * nam
 }
 
 
-JSON_ST *JSONCreate(VOID_T)
+JSON_ST *JSONCreate(void)
 {
     JSON_ST *pJson = MmMngrMalloc(sizeof(*pJson));
     memset(pJson, 0, sizeof(*pJson));
@@ -60,7 +60,7 @@ JSON_ST *JSONCreate(VOID_T)
 
 
 
-static inline VOID_T DestoryObj(JSON_OBJ_ST *pObj)
+static inline void DestoryObj(JSON_OBJ_ST *pObj)
 {
     if(!pObj)
     {
@@ -73,10 +73,10 @@ static inline VOID_T DestoryObj(JSON_OBJ_ST *pObj)
         MmMngrFree(pObj->name);
         pObj->name = NULL;
     }
-    MmMngrFree(pObj); // 销毁
+    MmMngrFree(pObj); // 销�?
 }
 
-BOOL_T JSONDestory(JSON_ST *pJson)
+bool JSONDestory(JSON_ST *pJson)
 {
     if(pJson)
     {
@@ -91,7 +91,7 @@ BOOL_T JSONDestory(JSON_ST *pJson)
     return false;
 }
 
-VOID_T JSONAddObj(JSON_OBJ_ST *dst, JSON_OBJ_ST *src)
+void JSONAddObj(JSON_OBJ_ST *dst, JSON_OBJ_ST *src)
 {
     if(dst && src)
     {
@@ -113,7 +113,7 @@ VOID_T JSONAddObj(JSON_OBJ_ST *dst, JSON_OBJ_ST *src)
 }
 
 
-JSON_OBJ_ST *JSONSeek(JSON_OBJ_ST *obj, S8_T * objName)
+JSON_OBJ_ST *JSONSeek(JSON_OBJ_ST *obj, int8_t * objName)
 {
     JSON_OBJ_ST *p = NULL;
     if(!obj)
@@ -134,11 +134,11 @@ JSON_OBJ_ST *JSONSeek(JSON_OBJ_ST *obj, S8_T * objName)
     return NULL;
 }
 
-static inline S32_T PrintString(S8_T **pBuf, S32_T *pSz, S8_T * str)
+static inline int32_t PrintString(int8_t **pBuf, int32_t *pSz, int8_t * str)
 {
     if(pBuf)
     {
-        S32_T len = snprintf(*pBuf, *pSz, "%s", str);
+        int32_t len = snprintf(*pBuf, *pSz, "%s", str);
         if(0 < len)
         {
             *pBuf += len;
@@ -153,19 +153,19 @@ static inline S32_T PrintString(S8_T **pBuf, S32_T *pSz, S8_T * str)
 }
 
 
-static inline S32_T PrintLineHead(S8_T **buf, S32_T *bufSz, S32_T childObjDepth, BOOL_T isFormat)
+static inline int32_t PrintLineHead(int8_t **buf, int32_t *bufSz, int32_t childObjDepth, bool isFormat)
 {
-    S32_T len = 0;
-    for(S32_T i =0; isFormat && i < childObjDepth; i++)
+    int32_t len = 0;
+    for(int32_t i =0; isFormat && i < childObjDepth; i++)
     {
         len += PrintString(buf, bufSz, TAB_CHAR);
     }
     return len;
 }
 
-static inline S32_T PrintLineTail(S8_T **buf, S32_T *bufSz, BOOL_T isFormat)
+static inline int32_t PrintLineTail(int8_t **buf, int32_t *bufSz, bool isFormat)
 {
-    S32_T len = 0;
+    int32_t len = 0;
     if(isFormat)
     {
         len += PrintString(buf, bufSz, ENTER_CHAR);
@@ -173,9 +173,9 @@ static inline S32_T PrintLineTail(S8_T **buf, S32_T *bufSz, BOOL_T isFormat)
     return len;
 }
 
-static inline S32_T ObjHead2Txt(JSON_OBJ_ST *pObj, S8_T **buf, S32_T *bufSz, S32_T childObjDepth, BOOL_T isFormat)
+static inline int32_t ObjHead2Txt(JSON_OBJ_ST *pObj, int8_t **buf, int32_t *bufSz, int32_t childObjDepth, bool isFormat)
 {
-    S32_T len = 0;
+    int32_t len = 0;
     if(pObj)
     {
         if(pObj->name)
@@ -219,7 +219,7 @@ static inline S32_T ObjHead2Txt(JSON_OBJ_ST *pObj, S8_T **buf, S32_T *bufSz, S32
 
             case JSON_VAR_TP_BOOL:
             {
-                BOOL_T val = false;
+                bool val = false;
                 memcpy(&val, pObj->data, sizeof val);
                 len += PrintString(buf, bufSz, val? "true" : "false");
             }break;
@@ -228,23 +228,23 @@ static inline S32_T ObjHead2Txt(JSON_OBJ_ST *pObj, S8_T **buf, S32_T *bufSz, S32
             {
                 float val = 0;
                 memcpy(&val, pObj->data, sizeof val);
-                S8_T valStr[32] = {0};
+                int8_t valStr[32] = {0};
                 snprintf(valStr, sizeof(valStr), "%f", val);
                 len += PrintString(buf, bufSz, valStr);
             }break;
 
             case JSON_VAR_TP_INT32:
             {
-                S32_T val = 0;
+                int32_t val = 0;
                 memcpy(&val, pObj->data, sizeof val);
-                S8_T valStr[32] = {0};
+                int8_t valStr[32] = {0};
                 snprintf(valStr, sizeof(valStr), "%d", val);
                 len += PrintString(buf, bufSz, valStr);
             }break;
 
             case JSON_VAR_TP_STRING:
             {
-                S8_T * val = (S8_T *)pObj->data;
+                int8_t * val = (int8_t *)pObj->data;
                 len += PrintString(buf, bufSz, "\"");
                 len += PrintString(buf, bufSz, val);
                 len += PrintString(buf, bufSz, "\"");
@@ -265,9 +265,9 @@ static inline S32_T ObjHead2Txt(JSON_OBJ_ST *pObj, S8_T **buf, S32_T *bufSz, S32
     return len;
 }
 
-static inline S32_T ObjTail2Txt(JSON_OBJ_ST *pObj, S8_T **buf, S32_T *bufSz, S32_T childObjDepth, BOOL_T isFormat)
+static inline int32_t ObjTail2Txt(JSON_OBJ_ST *pObj, int8_t **buf, int32_t *bufSz, int32_t childObjDepth, bool isFormat)
 {
-    S32_T len = 0;
+    int32_t len = 0;
     if(pObj)
     {
         switch(pObj->type)
@@ -301,9 +301,9 @@ static inline S32_T ObjTail2Txt(JSON_OBJ_ST *pObj, S8_T **buf, S32_T *bufSz, S32
 }
 
 
-static inline S32_T PrintObj(JSON_OBJ_ST *pObj, S8_T **buf, S32_T *bufSz, S32_T childObjDepth, BOOL_T isFormat)
+static inline int32_t PrintObj(JSON_OBJ_ST *pObj, int8_t **buf, int32_t *bufSz, int32_t childObjDepth, bool isFormat)
 {
-    S32_T len = 0;
+    int32_t len = 0;
     if(pObj)
     {
         len += ObjHead2Txt(pObj, buf, bufSz, childObjDepth, isFormat);
@@ -316,17 +316,17 @@ static inline S32_T PrintObj(JSON_OBJ_ST *pObj, S8_T **buf, S32_T *bufSz, S32_T 
 }
 
 
-static inline S32_T GetJsonPrintfBufSz(JSON_ST *pJson, BOOL_T isFormat)
+static inline int32_t GetJsonPrintfBufSz(JSON_ST *pJson, bool isFormat)
 {
-    S32_T sz = 0, childObjDepth = 0;
+    int32_t sz = 0, childObjDepth = 0;
     sz = PrintObj(pJson->pRoot, NULL, NULL, childObjDepth, isFormat);
     return sz;
 }
 
-S32_T JSONPrintf(JSON_ST *pJson, BOOL_T isEnFormat)
+int32_t JSONPrintf(JSON_ST *pJson, bool isEnFormat)
 {
-    S32_T childObjDepth = 0, sz = 0;
-    S8_T *buf = NULL;
+    int32_t childObjDepth = 0, sz = 0;
+    int8_t *buf = NULL;
 
     do
     {
@@ -364,14 +364,14 @@ S32_T JSONPrintf(JSON_ST *pJson, BOOL_T isEnFormat)
 }
 
 
-static inline S32_T CreateFile(S8_T * fileName, S8_T *dat, S32_T len)
+static inline int32_t CreateFile(int8_t * fileName, int8_t *dat, int32_t len)
 {
     if(!fileName && !dat && !len)
     {
         return -1;
     }
 /*
-    S32_T wLen = 0, cnt = 0;
+    int32_t wLen = 0, cnt = 0;
 
     FILE *fP = fopen(fileName, "w+");
 
@@ -394,18 +394,18 @@ static inline S32_T CreateFile(S8_T * fileName, S8_T *dat, S32_T len)
     return -1;
 }
 
-S32_T JSONPrint2File(JSON_ST *pJson, S8_T * fileName)
+int32_t JSONPrint2File(JSON_ST *pJson, int8_t * fileName)
 {
-    S32_T ret = -1;
+    int32_t ret = -1;
     JSONPrintf(pJson, true);
     ret = CreateFile(fileName, pJson->prtBuf, pJson->prtBufSz);
 
     return ret;
 }
 
-static inline S8_T GetChFromString(S8_T * *pStr)
+static inline int8_t GetChFromString(int8_t * *pStr)
 {
-    S8_T ch = '\0';
+    int8_t ch = '\0';
     if(*pStr && **pStr)
     {
         ch = **pStr;
@@ -414,10 +414,10 @@ static inline S8_T GetChFromString(S8_T * *pStr)
     return ch;
 }
 
-static inline S32_T GetStringLen(S8_T * *pTxt)
+static inline int32_t GetStringLen(int8_t * *pTxt)
 {
-    S32_T strLen = 0;
-    S8_T ch = 0;
+    int32_t strLen = 0;
+    int8_t ch = 0;
 
     ch = GetChFromString(pTxt);
 
@@ -446,11 +446,11 @@ static inline S32_T GetStringLen(S8_T * *pTxt)
     return -1;
 }
 
-static inline S8_T * StringParse(S8_T * *pTxt)
+static inline int8_t * StringParse(int8_t * *pTxt)
 {
-    S32_T strLen = 0;
-    S8_T * strBuf = NULL;
-    S8_T * str = *pTxt;
+    int32_t strLen = 0;
+    int8_t * strBuf = NULL;
+    int8_t * str = *pTxt;
     strLen = GetStringLen(pTxt);
     if(strLen > 0)
     {
@@ -465,10 +465,10 @@ static inline S8_T * StringParse(S8_T * *pTxt)
 }
 
 
-static inline S32_T GetObjStrLen(S8_T * *pTxt)
+static inline int32_t GetObjStrLen(int8_t * *pTxt)
 {
-    S8_T ch = 0;
-    S32_T len = 0;
+    int8_t ch = 0;
+    int32_t len = 0;
 
     ch = GetChFromString(pTxt);
     while(ch)
@@ -493,10 +493,10 @@ static inline S32_T GetObjStrLen(S8_T * *pTxt)
     return len;
 }
 
-static inline S32_T GetArrStrLen(S8_T * *pTxt)
+static inline int32_t GetArrStrLen(int8_t * *pTxt)
 {
-    S8_T ch = 0;
-    S32_T len = 0;
+    int8_t ch = 0;
+    int32_t len = 0;
 
     ch = GetChFromString(pTxt);
     while(ch)
@@ -521,10 +521,10 @@ static inline S32_T GetArrStrLen(S8_T * *pTxt)
     return len;
 }
 
-static inline S32_T GetItemStrLen(S8_T * *pTxt)
+static inline int32_t GetItemStrLen(int8_t * *pTxt)
 {
-    S8_T ch = 0;
-    S32_T len = 0;
+    int8_t ch = 0;
+    int32_t len = 0;
 
     ch = GetChFromString(pTxt);
     while(ch)
@@ -557,11 +557,11 @@ static inline S32_T GetItemStrLen(S8_T * *pTxt)
 }
 
 
-static inline S8_T * GetItemStr(S8_T * *pTxt)
+static inline int8_t * GetItemStr(int8_t * *pTxt)
 {
-    S8_T * str = NULL;
-    S8_T * txt = *pTxt;
-    S32_T len = GetItemStrLen(pTxt);
+    int8_t * str = NULL;
+    int8_t * txt = *pTxt;
+    int32_t len = GetItemStrLen(pTxt);
 
     if(len > 0)
     {
@@ -576,7 +576,7 @@ static inline S8_T * GetItemStr(S8_T * *pTxt)
 }
 
 
-static inline VOID_T StringDestory(S8_T * *str)
+static inline void StringDestory(int8_t * *str)
 {
     if(*str)
     {
@@ -585,9 +585,9 @@ static inline VOID_T StringDestory(S8_T * *str)
     }
 }
 
-static inline VOID_T SkipWhiteSpace(S8_T * *str)
+static inline void SkipWhiteSpace(int8_t * *str)
 {
-    S8_T ch = 0;
+    int8_t ch = 0;
 
     do
     {
@@ -597,35 +597,35 @@ static inline VOID_T SkipWhiteSpace(S8_T * *str)
 }
 
 
-static inline long long IntParse(S8_T * str)
+static inline long long IntParse(int8_t * str)
 {
     return atol(str);
 }
 
 
-static inline double FloatParse(S8_T * str)
+static inline double FloatParse(int8_t * str)
 {
     return atof(str);
 }
 
-static inline VOID_T ObjParse(S8_T * *pTxt, JSON_OBJ_ST *pObj);
+static inline void ObjParse(int8_t * *pTxt, JSON_OBJ_ST *pObj);
 
-static inline VOID_T ArrParse(S8_T * *pTxt, JSON_OBJ_ST *pObj)
+static inline void ArrParse(int8_t * *pTxt, JSON_OBJ_ST *pObj)
 {
-    S8_T * itemStr = NULL;
+    int8_t * itemStr = NULL;
 
     itemStr = GetItemStr(pTxt);
 
     while(itemStr)
     {
-        S8_T * str = itemStr;
+        int8_t * str = itemStr;
         SkipWhiteSpace(&str);
         str--;
 
         if('\"' == str[0])
         {
             str++;
-            S8_T * str1 = StringParse(&str);
+            int8_t * str1 = StringParse(&str);
             JSON_OBJ_ST *pStrObj = JSONCreateObj(JSON_VAR_TP_STRING, strlen(str1) + 1, str1, NULL);
             JSONAddObj(pObj, pStrObj);
 
@@ -647,8 +647,8 @@ static inline VOID_T ArrParse(S8_T * *pTxt, JSON_OBJ_ST *pObj)
         }
         else if('-' == str[0] || ('0' <= str[0] && '9' >= str[0]))
         {
-            BOOL_T isFloatNb = false;
-            for(S32_T i = 0; str[i]; i++)
+            bool isFloatNb = false;
+            for(int32_t i = 0; str[i]; i++)
             {
                 if('.' == str[i])
                 {
@@ -664,7 +664,7 @@ static inline VOID_T ArrParse(S8_T * *pTxt, JSON_OBJ_ST *pObj)
             }
             else
             {
-                S32_T iNb = IntParse(str);
+                int32_t iNb = IntParse(str);
                 JSON_OBJ_ST *pNbObj = JSONCreateObj(JSON_VAR_TP_INT32, sizeof(iNb), &iNb, NULL);
                 JSONAddObj(pObj, pNbObj);
             }
@@ -676,10 +676,10 @@ static inline VOID_T ArrParse(S8_T * *pTxt, JSON_OBJ_ST *pObj)
     }
 }
 
-static inline VOID_T ObjParse(S8_T * *pTxt, JSON_OBJ_ST *pObj)
+static inline void ObjParse(int8_t * *pTxt, JSON_OBJ_ST *pObj)
 {
-    S8_T * objName = NULL;
-    S8_T ch = 0;
+    int8_t * objName = NULL;
+    int8_t ch = 0;
     do
     {
         ch = GetChFromString(pTxt);
@@ -692,27 +692,27 @@ static inline VOID_T ObjParse(S8_T * *pTxt, JSON_OBJ_ST *pObj)
 
             case ':':
             {
-                S8_T * itemStr = GetItemStr(pTxt);
-                S8_T * str = itemStr;
+                int8_t * itemStr = GetItemStr(pTxt);
+                int8_t * str = itemStr;
                 SkipWhiteSpace(&str);
                 str--;
                 
                 if(0 == strncmp(str, "false", 5))
                 {
-                    BOOL_T val = false;
+                    bool val = false;
                     JSON_OBJ_ST *pValObj = JSONCreateObj(JSON_VAR_TP_BOOL, sizeof(val), &val, objName);
                     JSONAddObj(pObj, pValObj);
                 }
                 else if(0 == strncmp(str, "true", 4))
                 {
-                    BOOL_T val = true;
+                    bool val = true;
                     JSON_OBJ_ST *pValObj = JSONCreateObj(JSON_VAR_TP_BOOL, sizeof(val), &val, objName);
                     JSONAddObj(pObj, pValObj);
                 }
                 else if('\"' == str[0])
                 {
                     str++;
-                    S8_T * str1 = StringParse(&str);
+                    int8_t * str1 = StringParse(&str);
                     if(str1)
                     {
                         JSON_OBJ_ST *pStrObj = JSONCreateObj(JSON_VAR_TP_STRING, strlen(str1) + 1, str1, objName);
@@ -736,8 +736,8 @@ static inline VOID_T ObjParse(S8_T * *pTxt, JSON_OBJ_ST *pObj)
                 }
                 else if('-' == str[0] || ('0' <= str[0] && '9' >= str[0]))
                 {
-                    BOOL_T isFloatNb = false;
-                    for(S32_T i = 0; str[i]; i++)
+                    bool isFloatNb = false;
+                    for(int32_t i = 0; str[i]; i++)
                     {
                         if('.' == str[i])
                         {
@@ -753,7 +753,7 @@ static inline VOID_T ObjParse(S8_T * *pTxt, JSON_OBJ_ST *pObj)
                     }
                     else
                     {
-                        S32_T iNb = IntParse(str);
+                        int32_t iNb = IntParse(str);
                         JSON_OBJ_ST *pNbObj = JSONCreateObj(JSON_VAR_TP_INT32, sizeof(iNb), &iNb, objName);
                         JSONAddObj(pObj, pNbObj);
                     }
@@ -767,9 +767,9 @@ static inline VOID_T ObjParse(S8_T * *pTxt, JSON_OBJ_ST *pObj)
     while(ch);
 }
 
-static inline S8_T BracketCheck(S8_T * *pTxt, BOOL_T *result)
+static inline int8_t BracketCheck(int8_t * *pTxt, bool *result)
 {
-    S8_T ch = 0, ch2 = 0;
+    int8_t ch = 0, ch2 = 0;
     do
     {
         ch = GetChFromString(pTxt);
@@ -816,16 +816,16 @@ static inline S8_T BracketCheck(S8_T * *pTxt, BOOL_T *result)
 }
 
 
-BOOL_T IsJsonTxtLegal(S8_T * txt)
+bool IsJsonTxtLegal(int8_t * txt)
 {
-    S8_T * str = txt;
-    BOOL_T result = true;
-    S8_T errBuf[256] = {0};
+    int8_t * str = txt;
+    bool result = true;
+    int8_t errBuf[256] = {0};
 
     BracketCheck(&str, &result);
     if(false == result)
     {
-        U32_T diff = str - txt;
+        uint32_t diff = str - txt;
         if(diff < (sizeof(errBuf) / 2))
         {
             snprintf(errBuf, sizeof(errBuf) - 1, "%s", (str - diff));
@@ -837,7 +837,7 @@ BOOL_T IsJsonTxtLegal(S8_T * txt)
         }
 
         //printf("\033[0;32;31m""error : \n""\033[m");
-        for(U32_T i = 0; i < sizeof(errBuf); i++)
+        for(uint32_t i = 0; i < sizeof(errBuf); i++)
         {
             if(diff == i + 1)
             {
@@ -855,10 +855,10 @@ BOOL_T IsJsonTxtLegal(S8_T * txt)
 }
 
 
-JSON_ST *JSONParseStr(S8_T * txt)
+JSON_ST *JSONParseStr(int8_t * txt)
 {
     JSON_ST *pJson = NULL;
-    S8_T ch = 0;
+    int8_t ch = 0;
     do
     {
         if(!txt)
@@ -893,28 +893,28 @@ JSON_ST *JSONParseStr(S8_T * txt)
 }
 
 
-JSON_ST *JSONParseFile(S8_T * file)
+JSON_ST *JSONParseFile(int8_t * file)
 {
     JSON_ST *pJson = NULL;
-    (VOID_T) file;
+    (void) file;
 /*
     FILE *fpParse = fopen(file, "r+");
 
     if(fpParse)
     {
-        S8_T * str = NULL;
+        int8_t * str = NULL;
         
         fseek(fpParse, 0, SEEK_END);
-        S32_T fileSz = ftell(fpParse);
+        int32_t fileSz = ftell(fpParse);
         fseek(fpParse, 0, SEEK_SET);
 
         str = MmMngrMalloc(fileSz);
 
-        S32_T has_been_read = 0;
+        int32_t has_been_read = 0;
 
         for(has_been_read = 0; has_been_read < fileSz;)
         {
-            S32_T read_len = fread(&str[has_been_read], 1, fileSz - has_been_read,fpParse);
+            int32_t read_len = fread(&str[has_been_read], 1, fileSz - has_been_read,fpParse);
 
             if(read_len < 0)
             {
@@ -936,9 +936,9 @@ JSON_ST *JSONParseFile(S8_T * file)
     return pJson;
 }
 
-S32_T JSONGetArrSz(JSON_OBJ_ST *pArr)
+int32_t JSONGetArrSz(JSON_OBJ_ST *pArr)
 {
-    S32_T size = 0;
+    int32_t size = 0;
 
     do
     {
@@ -959,7 +959,7 @@ S32_T JSONGetArrSz(JSON_OBJ_ST *pArr)
     return size;
 }
 
-JSON_OBJ_ST *JSONGetArrItem(JSON_OBJ_ST *pArr, S32_T idx)
+JSON_OBJ_ST *JSONGetArrItem(JSON_OBJ_ST *pArr, int32_t idx)
 {
     JSON_OBJ_ST *pArrItem = NULL;
 
@@ -982,9 +982,9 @@ JSON_OBJ_ST *JSONGetArrItem(JSON_OBJ_ST *pArr, S32_T idx)
     return pArrItem;
 }
 
-BOOL_T JSONGetObjValue(JSON_OBJ_ST *pObj, VOID_T *pBuf)
+bool JSONGetObjValue(JSON_OBJ_ST *pObj, void *pBuf)
 {
-    BOOL_T ret = true;
+    bool ret = true;
     do
     {
         if(!pObj || !pBuf)
@@ -997,7 +997,7 @@ BOOL_T JSONGetObjValue(JSON_OBJ_ST *pObj, VOID_T *pBuf)
         {
             case JSON_VAR_TP_BOOL :
             {
-                memcpy(pBuf, pObj->data, sizeof(BOOL_T));
+                memcpy(pBuf, pObj->data, sizeof(bool));
             }break;
 
             case JSON_VAR_TP_FLOAT32 :
@@ -1007,7 +1007,7 @@ BOOL_T JSONGetObjValue(JSON_OBJ_ST *pObj, VOID_T *pBuf)
 
             case JSON_VAR_TP_INT32 :
             {
-                memcpy(pBuf, pObj->data, sizeof(S32_T));
+                memcpy(pBuf, pObj->data, sizeof(int32_t));
             }break;
 
             case JSON_VAR_TP_STRING :

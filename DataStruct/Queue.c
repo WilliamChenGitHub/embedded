@@ -2,7 +2,7 @@
 #include "MmMngr.h"
 
 // malloc queue mem
-QUEUE_ST * QueueCreate(S32_T elemSz, S32_T nbOfElem)
+QUEUE_ST * QueueCreate(int32_t elemSz, int32_t nbOfElem)
 {
     if(elemSz == 0 || nbOfElem == 0 )
     {
@@ -38,7 +38,7 @@ QUEUE_ST * QueueCreate(S32_T elemSz, S32_T nbOfElem)
 }
 
 
-S32_T QueueClear(QUEUE_ST * pQueue)
+int32_t QueueClear(QUEUE_ST * pQueue)
 {
     if(pQueue == NULL)
     {
@@ -49,7 +49,7 @@ S32_T QueueClear(QUEUE_ST * pQueue)
 }
 
 //free queue mem
-S32_T QueueDestroy(QUEUE_ST *pQueue)
+int32_t QueueDestroy(QUEUE_ST *pQueue)
 {
     if(NULL == pQueue)
     {
@@ -64,7 +64,7 @@ S32_T QueueDestroy(QUEUE_ST *pQueue)
 
 
 //do not malloc queue mem
-QUEUE_ST * QueueInit(S32_T elemSz, S32_T nbOfElem, QUEUE_ST *pQueue)
+QUEUE_ST * QueueInit(int32_t elemSz, int32_t nbOfElem, QUEUE_ST *pQueue)
 {
     if(elemSz == 0 || nbOfElem == 0 )
     {
@@ -99,7 +99,7 @@ QUEUE_ST * QueueInit(S32_T elemSz, S32_T nbOfElem, QUEUE_ST *pQueue)
 
 
 //do not free queue mem
-S32_T QueueDeinit(QUEUE_ST * pQueue)
+int32_t QueueDeinit(QUEUE_ST * pQueue)
 {
     if(NULL == pQueue)
     {

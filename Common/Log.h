@@ -31,7 +31,7 @@ typedef enum
 extern "C"{
 #endif
 
-VOID_T LOGPrintf(LOG_LEVEL_ET lvl, S8_T *pFormat, ...);
+void LOGPrintf(LOG_LEVEL_ET lvl, int8_t *pFormat, ...);
 
 #define PRINTF(lvl, format, ...) LOGPrintf(lvl, format, ##__VA_ARGS__)
 
@@ -52,10 +52,10 @@ VOID_T LOGPrintf(LOG_LEVEL_ET lvl, S8_T *pFormat, ...);
 struct __logAttr;
 
 
-typedef VOID_T (*LOG_PUTS_FT)(struct __logAttr *pLog, S8_T *string, S32_T len);
-typedef S32_T (*LOG_GETC_FT)(struct __logAttr *pLog);
-typedef VOID_T (*LOG_DEINIT_FT)(struct __logAttr *pLog);
-typedef VOID_T (*LOG_RX_FT)(struct __logAttr *pLog, U8_T *pDat, S32_T len);
+typedef void (*LOG_PUTS_FT)(struct __logAttr *pLog, int8_t *string, int32_t len);
+typedef int32_t (*LOG_GETC_FT)(struct __logAttr *pLog);
+typedef void (*LOG_DEINIT_FT)(struct __logAttr *pLog);
+typedef void (*LOG_RX_FT)(struct __logAttr *pLog, uint8_t *pDat, int32_t len);
 
 
 typedef struct __logVtbl
@@ -81,19 +81,19 @@ typedef struct
 }FILE_LOG_ATTR_ST;
 
 
-VOID_T LOGDeinit(VOID_T);
+void LOGDeinit(void);
 
-VOID_T LOGSetLevel(LOG_LEVEL_ET level);
+void LOGSetLevel(LOG_LEVEL_ET level);
 
-VOID_T LOGInit(LOG_ATTR_ST *pLogAttr);
+void LOGInit(LOG_ATTR_ST *pLogAttr);
 
-VOID_T LOGArrData(S8_T *pArrName, U8_T *pDat, S32_T len);
+void LOGArrData(int8_t *pArrName, uint8_t *pDat, int32_t len);
 
-VOID_T LOGRx(U8_T *pDat, S32_T len);
+void LOGRx(uint8_t *pDat, int32_t len);
 
-S32_T LOGGetCh(VOID_T);
+int32_t LOGGetCh(void);
 
-S32_T FileLOGCreate(LOG_ATTR_ST *pLogAttr, FILE *pInF, FILE *pOutF);
+int32_t FileLOGCreate(LOG_ATTR_ST *pLogAttr, FILE *pInF, FILE *pOutF);
 
 
 #ifdef __cplusplus

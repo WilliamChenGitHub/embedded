@@ -2,7 +2,7 @@
 #include "MmMngr.h"
 #include "Log.h"
 
-static VOID_T *threadCb(VOID_T *pArg)
+static void *threadCb(void *pArg)
 {
     THREAD_POOL_ST *pPool = (THREAD_POOL_ST *)pArg;
 
@@ -41,9 +41,9 @@ static VOID_T *threadCb(VOID_T *pArg)
 }
 
 
-THREAD_POOL_ST *ThreadPoolCreate(S32_T nbOfThreads, S32_T stackSzOfTh)
+THREAD_POOL_ST *ThreadPoolCreate(int32_t nbOfThreads, int32_t stackSzOfTh)
 {
-    S32_T i = 0;
+    int32_t i = 0;
     if((0 > nbOfThreads) || (MAX_ACTIVE_THREADS < nbOfThreads))
     {
         LOGE("nbOfThreads exceed avaliable range , %d\r\n", nbOfThreads);
@@ -84,7 +84,7 @@ THREAD_POOL_ST *ThreadPoolCreate(S32_T nbOfThreads, S32_T stackSzOfTh)
 
     for(i = 0; i < nbOfThreads; i++)
     {
-        pPool->pTidArr[i] = ThreadCreate(threadCb, pPool, stackSzOfTh, FALSE, 10, "tpTh");
+        pPool->pTidArr[i] = ThreadCreate(threadCb, pPool, stackSzOfTh, false, 10, "tpTh");
         if(NULL == pPool->pTidArr[i])
         {
             LOGE("Thread create failed, %d\r\n", i);
@@ -97,12 +97,12 @@ THREAD_POOL_ST *ThreadPoolCreate(S32_T nbOfThreads, S32_T stackSzOfTh)
 err5:
     pPool->exit = 1;
     i--;
-    for(S32_T j = i; j >= 0; j--)
+    for(int32_t j = i; j >= 0; j--)
     {
         SemPost(pPool->sem);
     }
     
-    for(S32_T j = i; j >= 0; j--)
+    for(int32_t j = i; j >= 0; j--)
     {
         ThreadJoin(pPool->pTidArr[i]); // destory all thread
     }
@@ -122,7 +122,7 @@ err1:
     return NULL;
 }
 
-S32_T ThreadPoolDispatchMission(THREAD_POOL_ST *pPool, THREAD_POOL_MISSION pMission, VOID_T *pArg)
+int32_t ThreadPoolDispatchMission(THREAD_POOL_ST *pPool, THREAD_POOL_MISSION pMission, void *pArg)
 {
     if(MAX_WAITING_MISSIONS <= pPool->wMissions)
     {
@@ -152,15 +152,15 @@ err1:
     return -1;
 }
 
-VOID_T ThreadPoolDestory(THREAD_POOL_ST *pPool)
+void ThreadPoolDestory(THREAD_POOL_ST *pPool)
 {
     pPool->exit = 1;
 
-    for(S32_T i = 0; i < pPool->nbOfThreads; i++)
+    for(int32_t i = 0; i < pPool->nbOfThreads; i++)
     {
         SemPost(pPool->sem);
     }
-    for(S32_T i = 0; i < pPool->nbOfThreads; i++)
+    for(int32_t i = 0; i < pPool->nbOfThreads; i++)
     {
         ThreadJoin(pPool->pTidArr[i]);
     }

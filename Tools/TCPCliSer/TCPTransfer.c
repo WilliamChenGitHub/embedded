@@ -88,7 +88,7 @@ static void TCPTransferDeinitDef(TRANSFER_ST *pTrans)
 }
 
 
-static VOID_T *clientRxTh(VOID_T *pArg)
+static void *clientRxTh(void *pArg)
 {
     TCP_TRANSFER_ST *pTCPTrans = (TCP_TRANSFER_ST *)pArg;
 
@@ -186,7 +186,7 @@ int32_t TCPTransferInit(TRANSFER_ST *pTrans, SOCKET_T socket, bool isClient)
     if(isClient)
     {
         pTCPTrans->exit = 0;
-        pTCPTrans->clientRxTh = ThreadCreate(clientRxTh, pTCPTrans, 1024 * 3, FALSE, 10, "tcp Trans Rx");
+        pTCPTrans->clientRxTh = ThreadCreate(clientRxTh, pTCPTrans, 1024 * 3, false, 10, "tcp Trans Rx");
         if(!pTCPTrans->clientRxTh)
         {
             goto err3;

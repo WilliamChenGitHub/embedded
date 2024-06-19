@@ -1,7 +1,7 @@
 #ifndef ___SOCKET_H__
 #define ___SOCKET_H__
 
-#include "TypeDef.h"
+#include "EmbeddedDef.h"
 
 typedef enum
 {
@@ -22,8 +22,6 @@ typedef enum
     SOCKET_PROTOCAL_BUTT,
 }SOCKET_PROTOCAL_ET;
 
-
-//typedef int32_t SOCKET_T;
 
 
 #ifdef __cplusplus

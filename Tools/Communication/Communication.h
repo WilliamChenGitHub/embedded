@@ -1,7 +1,7 @@
 #ifndef __COMMUNICATION_H__
 #define __COMMUNICATION_H__
 
-#include "TypeDef.h"
+#include "EmbeddedDef.h"
 #include "TransferFactory.h"
 #include "Thread.h"
 #include "List.h"
@@ -16,35 +16,35 @@ struct __comPack;
 
 typedef struct __thpAttr
 {
-    U16_T packSz;
-    U32_T reqDatSz;
+    uint16_t packSz;
+    uint32_t reqDatSz;
 }COM_THP_REQATTR_ST;
 
 typedef struct __timeSync
 {
-    S64_T t1;
-    S64_T t2;
-    S64_T t3;
-    S64_T t4;
+    int64_t t1;
+    int64_t t2;
+    int64_t t3;
+    int64_t t4;
 }COM_TIME_SYNC_ST;
 
 
 typedef struct __comResult
 {
-    S32_T comRet;
-    S32_T execRet;
+    int32_t comRet;
+    int32_t execRet;
 }COM_RESULT_ST;
 
 
 #pragma pack(pop)
 
 
-typedef S32_T (*COM_PACK_PARSE_FT)(struct __ComPortAttr *pComPort, struct __comPack *pPack, S32_T *pExecRet);
+typedef int32_t (*COM_PACK_PARSE_FT)(struct __ComPortAttr *pComPort, struct __comPack *pPack, int32_t *pExecRet);
 
 typedef struct __ComPortAttr
 {
     LIST_ST list;
-    U8_T port;
+    uint8_t port;
     COM_PACK_PARSE_FT pPackParse;
     struct __CommunicationAttr *pCom;
 }COM_PORT_ATTR_ST;
@@ -53,11 +53,11 @@ typedef struct __ComWaitPackAttr
 {
     LIST_ST list;
     
-    U32_T waitId;
-    U16_T packId;
+    uint32_t waitId;
+    uint16_t packId;
 
-    U16_T bufLen;
-    VOID_T *pBuf;
+    uint16_t bufLen;
+    void *pBuf;
 
     COM_RESULT_ST *pResult;
     EVENT_T eventWait;
@@ -80,13 +80,13 @@ typedef struct __CommunicationAttr
     LIST_ST waitPackList;
     MUTEX_T waitPackListMtx;
     
-    S64_T timeOffset;
-    U32_T timeErrCnt;
-    U32_T packCnt;
+    int64_t timeOffset;
+    uint32_t timeErrCnt;
+    uint32_t packCnt;
 
-    S32_T exit;
-    S32_T stop;
-    BOOL_T isMaster;
+    int32_t exit;
+    int32_t stop;
+    bool isMaster;
 }COM_ATTR_ST;
 
 
@@ -151,18 +151,18 @@ typedef enum
 
 typedef struct __comPack// total len must be mutiple of 4
 {
-    U32_T sof; // start of frame
-    U16_T sumCheck; // from len to EOF
-    U16_T len; // data len
+    uint32_t sof; // start of frame
+    uint16_t sumCheck; // from len to EOF
+    uint16_t len; // data len
 
-    U32_T packCnt; // pack count    
-    U32_T ackNb; // Acknowledgment number
-    U16_T packId; // data pack ID
-    U8_T option; // bit7: isNeedACK, bit6: method(set/get), bit3-0:pack type
-    U8_T port; // communicaiton port number
-    U64_T timestamp; // us
+    uint32_t packCnt; // pack count    
+    uint32_t ackNb; // Acknowledgment number
+    uint16_t packId; // data pack ID
+    uint8_t option; // bit7: isNeedACK, bit6: method(set/get), bit3-0:pack type
+    uint8_t port; // communicaiton port number
+    uint64_t timestamp; // us
 
-    U8_T data[0];
+    uint8_t data[0];
 }COM_PACK_ST;
 
 #pragma pack(pop)
@@ -190,22 +190,22 @@ typedef struct __comPack// total len must be mutiple of 4
     #endif
 #endif
 
-#define COM_BIGLITTLESW16(A)        ((((U16_T)(A) & 0xff00) >> 8) | \
-                                    (((U16_T)(A) & 0x00ff) << 8))
+#define COM_BIGLITTLESW16(A)        ((((uint16_t)(A) & 0xff00) >> 8) | \
+                                    (((uint16_t)(A) & 0x00ff) << 8))
 
-#define COM_BIGLITTLESW32(A)        ((((U32_T)(A) & 0xff000000) >> 24) | \
-                                    (((U32_T)(A) & 0x00ff0000) >> 8) | \
-                                    (((U32_T)(A) & 0x0000ff00) << 8) | \
-                                    (((U32_T)(A) & 0x000000ff) << 24))
+#define COM_BIGLITTLESW32(A)        ((((uint32_t)(A) & 0xff000000) >> 24) | \
+                                    (((uint32_t)(A) & 0x00ff0000) >> 8) | \
+                                    (((uint32_t)(A) & 0x0000ff00) << 8) | \
+                                    (((uint32_t)(A) & 0x000000ff) << 24))
 
-#define COM_BIGLITTLESW64(A)        ((((U64_T)(A) & 0xff00000000000000) >> 56) | \
-                                    (((U64_T)(A) & 0x00ff000000000000) >> 40) | \
-                                    (((U64_T)(A) & 0x0000ff0000000000) >> 24) | \
-                                    (((U64_T)(A) & 0x000000ff00000000) >> 8) | \
-                                    (((U64_T)(A) & 0x00000000ff000000) << 8) | \
-                                    (((U64_T)(A) & 0x0000000000ff0000) << 24) | \
-                                    (((U64_T)(A) & 0x000000000000ff00) << 40) | \
-                                    (((U64_T)(A) & 0x00000000000000ff) << 56))
+#define COM_BIGLITTLESW64(A)        ((((uint64_t)(A) & 0xff00000000000000) >> 56) | \
+                                    (((uint64_t)(A) & 0x00ff000000000000) >> 40) | \
+                                    (((uint64_t)(A) & 0x0000ff0000000000) >> 24) | \
+                                    (((uint64_t)(A) & 0x000000ff00000000) >> 8) | \
+                                    (((uint64_t)(A) & 0x00000000ff000000) << 8) | \
+                                    (((uint64_t)(A) & 0x0000000000ff0000) << 24) | \
+                                    (((uint64_t)(A) & 0x000000000000ff00) << 40) | \
+                                    (((uint64_t)(A) & 0x00000000000000ff) << 56))
 
 
 #ifdef MACHINE_BYTE_ORDER_LITTLE
@@ -246,41 +246,41 @@ extern "C"{
 #define COM_GET_TICK_US(pCom)   (GET_SYS_TICK_US() + (pCom->timeOffset))
 
 
-COM_ATTR_ST *CommunicationInit(TRANSFER_FACTORY_ST *pTransferFactory, BOOL_T isMaster, BOOL_T createTh2Parse);
+COM_ATTR_ST *CommunicationInit(TRANSFER_FACTORY_ST *pTransferFactory, bool isMaster, bool createTh2Parse);
 
-VOID_T CommunicationDeinit(COM_ATTR_ST *pCom);
+void CommunicationDeinit(COM_ATTR_ST *pCom);
 
 // port can not be zero
-S32_T CommunicationRegPort(COM_ATTR_ST *pCom, COM_PORT_ATTR_ST *pComPort, COM_PACK_PARSE_FT pFnPackParse, U8_T port);
+int32_t CommunicationRegPort(COM_ATTR_ST *pCom, COM_PORT_ATTR_ST *pComPort, COM_PACK_PARSE_FT pFnPackParse, uint8_t port);
 
-VOID_T CommunicationUnregPort(COM_PORT_ATTR_ST *pComPort);
+void CommunicationUnregPort(COM_PORT_ATTR_ST *pComPort);
 
 
-COM_RESULT_ST CommunicationTxPack(COM_ATTR_ST * pCom, U8_T port, U32_T ackNb, U8_T packType, BOOL_T isNeedAck, U32_T wTMs, U8_T retryCnt, U16_T packId, VOID_T * pDat, U16_T len);
+COM_RESULT_ST CommunicationTxPack(COM_ATTR_ST * pCom, uint8_t port, uint32_t ackNb, uint8_t packType, bool isNeedAck, uint32_t wTMs, uint8_t retryCnt, uint16_t packId, void * pDat, uint16_t len);
 
-COM_RESULT_ST CommunicationGetPack(COM_ATTR_ST * pCom, U8_T port, U8_T packType, U32_T wTMs, U8_T retryCnt, U16_T packId, VOID_T * pTxDat, U16_T tLen, VOID_T * pRxBuf, U16_T bLen);
+COM_RESULT_ST CommunicationGetPack(COM_ATTR_ST * pCom, uint8_t port, uint8_t packType, uint32_t wTMs, uint8_t retryCnt, uint16_t packId, void * pTxDat, uint16_t tLen, void * pRxBuf, uint16_t bLen);
 
 
 //note: pingDlen must be mutiple of 4
-COM_RESULT_ST CommunicationPing(COM_ATTR_ST *pCom, U16_T pingDlen, U64_T *pDtNs); // ping test
+COM_RESULT_ST CommunicationPing(COM_ATTR_ST *pCom, uint16_t pingDlen, uint64_t *pDtNs); // ping test
 
 //note: packLen must be mutiple of 4
-S32_T CommunicationTxThroughput(COM_ATTR_ST *pCom, U32_T txSz, U16_T packLen);
-S32_T CommunicationTimedTxThp(COM_ATTR_ST *pCom, U64_T durationMs, U16_T packLen);// test send throughput 
+int32_t CommunicationTxThroughput(COM_ATTR_ST *pCom, uint32_t txSz, uint16_t packLen);
+int32_t CommunicationTimedTxThp(COM_ATTR_ST *pCom, uint64_t durationMs, uint16_t packLen);// test send throughput 
 
 //note: packLen must be mutiple of 4
-S32_T CommunicationRxThroughput(COM_ATTR_ST *pCom, U32_T rxSz, U16_T packLen);
+int32_t CommunicationRxThroughput(COM_ATTR_ST *pCom, uint32_t rxSz, uint16_t packLen);
 
-S32_T CommunicationReset(COM_ATTR_ST *pCom);
+int32_t CommunicationReset(COM_ATTR_ST *pCom);
 
-S32_T CommunicaitonStartTimeSync(COM_ATTR_ST *pCom);
+int32_t CommunicaitonStartTimeSync(COM_ATTR_ST *pCom);
 
-VOID_T CommunicationTryParse(COM_ATTR_ST *pCom);
+void CommunicationTryParse(COM_ATTR_ST *pCom);
 
 
-S32_T ComPortRetPack(COM_PORT_ATTR_ST *pComPort, U16_T packId, U32_T ackNb, VOID_T *pDat, U16_T dLen);
-S32_T ComPortSndPack(COM_PORT_ATTR_ST *pComPort, U16_T packId, BOOL_T isNeedAck, U32_T wTMs, U8_T retryCnt, VOID_T *pDat, U16_T dLen);
-S32_T ComPortGetPack(COM_PORT_ATTR_ST *pComPort, U16_T packId, U32_T wTMs, U8_T retryCnt, VOID_T *pTxDat, U16_T tLen, VOID_T *pBuf, U16_T bLen);
+int32_t ComPortRetPack(COM_PORT_ATTR_ST *pComPort, uint16_t packId, uint32_t ackNb, void *pDat, uint16_t dLen);
+int32_t ComPortSndPack(COM_PORT_ATTR_ST *pComPort, uint16_t packId, bool isNeedAck, uint32_t wTMs, uint8_t retryCnt, void *pDat, uint16_t dLen);
+int32_t ComPortGetPack(COM_PORT_ATTR_ST *pComPort, uint16_t packId, uint32_t wTMs, uint8_t retryCnt, void *pTxDat, uint16_t tLen, void *pBuf, uint16_t bLen);
 
 #ifdef __cplusplus
 }

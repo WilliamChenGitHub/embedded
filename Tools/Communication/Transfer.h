@@ -1,7 +1,7 @@
 #ifndef __TRANSFER_H__
 #define __TRANSFER_H__
 
-#include "TypeDef.h"
+#include "EmbeddedDef.h"
 #include "Queue.h"
 #include "Thread.h"
 #include "Log.h"
@@ -18,18 +18,18 @@ typedef struct __TransferAttr
 
     MUTEX_T txMutex;
     EVENT_T rxEvent;
-    BOOL_T bInited;
+    bool bInited;
 }TRANSFER_ST;
 
 typedef struct
 {
-    VOID_T *pBuf;
-    U32_T bLen;
+    void *pBuf;
+    uint32_t bLen;
 }TRANSFER_BUF_ST;
 
-typedef S32_T (*TRANSFER_TX_FT)(TRANSFER_ST *pTrans, TRANSFER_BUF_ST *pBuf, S32_T totalLen);
-typedef S32_T (*TRANSFER_READRXDAT_FT)(TRANSFER_ST *pTrans, VOID_T *pBuf, S32_T len);
-typedef VOID_T (*TRANSFER_OP_FT)(TRANSFER_ST *pTrans);
+typedef int32_t (*TRANSFER_TX_FT)(TRANSFER_ST *pTrans, TRANSFER_BUF_ST *pBuf, int32_t totalLen);
+typedef int32_t (*TRANSFER_READRXDAT_FT)(TRANSFER_ST *pTrans, void *pBuf, int32_t len);
+typedef void (*TRANSFER_OP_FT)(TRANSFER_ST *pTrans);
 
 
 typedef struct __transferVtbl
@@ -45,17 +45,17 @@ extern "C"{
 #endif
 
 
-static inline S32_T TransferTx(TRANSFER_ST *pTrans, TRANSFER_BUF_ST *pBuf, S32_T totalLen)
+static inline int32_t TransferTx(TRANSFER_ST *pTrans, TRANSFER_BUF_ST *pBuf, int32_t totalLen)
 {
     return pTrans->vptr->pTransferTx(pTrans, pBuf, totalLen);
 }
 
-static inline VOID_T TransferDeinit(TRANSFER_ST *pTrans)
+static inline void TransferDeinit(TRANSFER_ST *pTrans)
 {
     pTrans->vptr->pTransferDeinit(pTrans);
 }
 
-static inline VOID_T TransferRx(TRANSFER_ST *pTrans, VOID_T *pDat, S32_T len)
+static inline void TransferRx(TRANSFER_ST *pTrans, void *pDat, int32_t len)
 {
     if(0 == QueueMultPush(pTrans->pRxQueue, pDat, len))
     {
@@ -63,38 +63,38 @@ static inline VOID_T TransferRx(TRANSFER_ST *pTrans, VOID_T *pDat, S32_T len)
     }
 }
 
-static inline S32_T TransferReqTxDat(TRANSFER_ST *pTrans, VOID_T *pDat, S32_T len)
+static inline int32_t TransferReqTxDat(TRANSFER_ST *pTrans, void *pDat, int32_t len)
 {
-    S32_T leftLen = CalcQueueDataSz(pTrans->pTxQueue);
-    S32_T reqLen = len > leftLen ? leftLen : len;
-    S32_T ret = (0 == QueueMultPop(pTrans->pTxQueue, pDat, reqLen)) ? reqLen : -1;
+    int32_t leftLen = CalcQueueDataSz(pTrans->pTxQueue);
+    int32_t reqLen = len > leftLen ? leftLen : len;
+    int32_t ret = (0 == QueueMultPop(pTrans->pTxQueue, pDat, reqLen)) ? reqLen : -1;
     return ret;
 }
 
 // need release
-static inline S32_T TransferReadRxDat(TRANSFER_ST *pTrans, VOID_T *pDat, S32_T len)
+static inline int32_t TransferReadRxDat(TRANSFER_ST *pTrans, void *pDat, int32_t len)
 {
     return pTrans->vptr->pTransferReadRxDat(pTrans, pDat, len);
 }
 
-static inline VOID_T TransferReleaseRxDat(TRANSFER_ST *pTrans, S32_T len)
+static inline void TransferReleaseRxDat(TRANSFER_ST *pTrans, int32_t len)
 {
     QueueReleaseMultObj(pTrans->pRxQueue, len);
 }
 
-static inline VOID_T TransferClrBuf(TRANSFER_ST *pTrans)
+static inline void TransferClrBuf(TRANSFER_ST *pTrans)
 {
     pTrans->vptr->pTransferClrBuf(pTrans);
 }
 
 
-S32_T TransferTxDef(TRANSFER_ST *pTrans, TRANSFER_BUF_ST *pBuf, S32_T totalLen);
-S32_T TransferReadRxDatDef(TRANSFER_ST *pTrans, VOID_T *pDat, S32_T len);
-VOID_T TransferDeinitDef(TRANSFER_ST *pTrans);
-VOID_T TransferClrBufferDef(TRANSFER_ST *pTrans);
+int32_t TransferTxDef(TRANSFER_ST *pTrans, TRANSFER_BUF_ST *pBuf, int32_t totalLen);
+int32_t TransferReadRxDatDef(TRANSFER_ST *pTrans, void *pDat, int32_t len);
+void TransferDeinitDef(TRANSFER_ST *pTrans);
+void TransferClrBufferDef(TRANSFER_ST *pTrans);
 
-S32_T TransferInit(TRANSFER_ST *pTrans, S32_T rxBufSz, S32_T txBufSz);
-VOID_T TransferPrepareDeinit(TRANSFER_ST *pTrans);
+int32_t TransferInit(TRANSFER_ST *pTrans, int32_t rxBufSz, int32_t txBufSz);
+void TransferPrepareDeinit(TRANSFER_ST *pTrans);
 
 #ifdef __cplusplus
 }
