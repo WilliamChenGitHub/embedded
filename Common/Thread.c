@@ -213,7 +213,7 @@ typedef struct
 {
     pthread_t threadId;
     THREAD_FUNC_FT pFunc;
-    int8_t name[24];
+    char name[24];
     bool isDetached;
     void *pUsrData;
 }THREAD_ATTR_LINUX_ST;
@@ -234,7 +234,7 @@ static void *ThreadFunc(void *argument)
     return NULL;
 }
 
-ATTRIBUTE_WEAK THREAD_T ThreadCreate(THREAD_FUNC_FT pFunc, void *pArg, uint32_t stackSz, bool isDetached, uint32_t priority, int8_t *name)
+ATTRIBUTE_WEAK THREAD_T ThreadCreate(THREAD_FUNC_FT pFunc, void *pArg, uint32_t stackSz, bool isDetached, uint32_t priority, char *name)
 {
     THREAD_ATTR_LINUX_ST *pThreadAttr = MmMngrMalloc(sizeof(THREAD_ATTR_LINUX_ST));
     pthread_attr_t thAttr = {0};
@@ -428,7 +428,7 @@ typedef struct
     HANDLE hThread;
     DWORD iThread;
     THREAD_FUNC_FT pFunc;
-    int8_t name[24];
+    char name[24];
     bool isDetached;
     void* pUsrData;
 }THREAD_ATTR_WINDOWS_ST;
@@ -448,7 +448,7 @@ static DWORD WINAPI ThreadFunc(LPVOID argument)
     ExitThread(0);
 }
 
-ATTRIBUTE_WEAK THREAD_T ThreadCreate(THREAD_FUNC_FT pFunc, void* pArg, uint32_t stackSz, bool isDetached, uint32_t priority, int8_t* name)
+ATTRIBUTE_WEAK THREAD_T ThreadCreate(THREAD_FUNC_FT pFunc, void* pArg, uint32_t stackSz, bool isDetached, uint32_t priority, char *name)
 {
     THREAD_ATTR_WINDOWS_ST* pThreadAttr = NULL;
 
@@ -629,7 +629,7 @@ typedef struct
 {
     osThreadId_t threadId;
     THREAD_FUNC_FT pFunc;
-    int8_t name[24];
+    char name[24];
     bool isDetached;
     void *pUsrData;
 }THREAD_ATTR_RTOS_ST;
@@ -647,7 +647,7 @@ static void ThreadFunc(void *argument)
     osThreadExit();
 }
 
-ATTRIBUTE_WEAK THREAD_T ThreadCreate(THREAD_FUNC_FT pFunc, void *pArg, uint32_t stackSz, bool isDetached, uint32_t priority, int8_t *name)
+ATTRIBUTE_WEAK THREAD_T ThreadCreate(THREAD_FUNC_FT pFunc, void *pArg, uint32_t stackSz, bool isDetached, uint32_t priority, char *name)
 {
     THREAD_ATTR_RTOS_ST *pThread = MmMngrMalloc(sizeof(THREAD_ATTR_RTOS_ST));
     osThreadAttr_t threadAttr = {0};

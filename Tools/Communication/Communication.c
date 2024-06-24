@@ -1,7 +1,7 @@
 #include "Communication.h"
 #include "Log.h"
 
-static int8_t *gPackTypeName[] = 
+static char *gPackTypeName[] = 
 {
     "PACKTP_PING_REQ",
     "PACKTP_PING_RES",
@@ -20,7 +20,7 @@ static int8_t *gPackTypeName[] =
 };
 
 
-static inline int8_t *GetPackTypeName(COM_PACK_ET packType)
+static inline char *GetPackTypeName(COM_PACK_ET packType)
 {
     if (PACKTP_END > packType && 0 <= packType)
     {
@@ -83,11 +83,11 @@ static inline COM_WAIT_PACK_ATTR_ST *GetWaitPackFromHead(COM_ATTR_ST *pCom, uint
     COM_WAIT_PACK_ATTR_ST *pWaitPack = NULL, *pRet = NULL;
 
     MutexLock(pCom->waitPackListMtx);
-    LIST_FOREACH_FROM_HEAD(pWaitPack, &pCom->waitPackList)
+    LIST_FOREACH_FROM_HEAD(pWaitPack, &pCom->waitPackList, list)
     {
         if(pWaitPack->waitId == waitId && pWaitPack->packId == packId)
         {
-            LIST_DELETE(pWaitPack);
+            LIST_DELETE(&pWaitPack->list);
             pRet = pWaitPack;
             break;
         }
@@ -102,11 +102,11 @@ static inline COM_WAIT_PACK_ATTR_ST *GetWaitPackFromTail(COM_ATTR_ST *pCom, uint
     COM_WAIT_PACK_ATTR_ST *pWaitPack = NULL, *pRet = NULL;
 
     MutexLock(pCom->waitPackListMtx);
-    LIST_FOREACH_FROM_TAIL(pWaitPack, &pCom->waitPackList)
+    LIST_FOREACH_FROM_TAIL(pWaitPack, &pCom->waitPackList, list)
     {
         if(pWaitPack->waitId == waitId && pWaitPack->packId == packId)
         {
-            LIST_DELETE(pWaitPack);
+            LIST_DELETE(&pWaitPack->list);
             pRet = pWaitPack;
             break;
         }
@@ -132,7 +132,7 @@ static inline int32_t AddWaitPack(COM_ATTR_ST *pCom, uint32_t waitId, uint16_t p
 
         MutexLock(pCom->waitPackListMtx);
 
-        LIST_INSERT_BACK(&pCom->waitPackList, pWaitPack);
+        LIST_INSERT_BACK(&pCom->waitPackList, &pWaitPack->list);
         MutexUnlock(pCom->waitPackListMtx);
         return 0;
     }
@@ -631,7 +631,7 @@ static void *CommunicationProcThread(void *argument)
             {
                 COM_PORT_ATTR_ST *pPort = NULL, *pPortMatched = NULL;
                 MutexLock(pCom->portListMtx); 
-                LIST_FOREACH_FROM_HEAD(pPort, &pCom->portList)
+                LIST_FOREACH_FROM_HEAD(pPort, &pCom->portList, list)
                 {
                     if(pPort->port == pPack->port)
                     {
@@ -997,7 +997,7 @@ void CommunicationTryParse(COM_ATTR_ST *pCom)
             {
                 COM_PORT_ATTR_ST *pPort = NULL, *pPortMatched = NULL;
                 MutexLock(pCom->portListMtx); 
-                LIST_FOREACH_FROM_HEAD(pPort, &pCom->portList)
+                LIST_FOREACH_FROM_HEAD(pPort, &pCom->portList, list)
                 {
                     if(pPort->port == pPack->port)
                     {
@@ -1075,7 +1075,7 @@ int32_t CommunicationRegPort(COM_ATTR_ST *pCom, COM_PORT_ATTR_ST *pComPort, COM_
     pComPort->pPackParse = pFnPackParse;
 
     MutexLock(pCom->portListMtx);
-    LIST_INSERT_BACK(&pCom->portList, pComPort);
+    LIST_INSERT_BACK(&pCom->portList, &pComPort->list);
     MutexUnlock(pCom->portListMtx);
 
     return 0;
@@ -1089,7 +1089,7 @@ void CommunicationUnregPort(COM_PORT_ATTR_ST *pComPort)
     }
     
     MutexLock(pComPort->pCom->portListMtx);
-    LIST_DELETE(pComPort);
+    LIST_DELETE(&pComPort->list);
     MutexUnlock(pComPort->pCom->portListMtx);
 }
 

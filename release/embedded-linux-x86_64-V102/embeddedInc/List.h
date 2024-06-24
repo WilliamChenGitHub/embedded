@@ -91,62 +91,53 @@ static inline void ListSwap(LIST_ST *pEntryA, LIST_ST *pEntryB)
 
 
 #define LIST_INSERT_FRONT(entry, entryI)\
-    ListInsertFront(entry, entryI)
+    ListInsertFront((LIST_ST *)(entry), (LIST_ST *)(entryI))
 
 #define LIST_INSERT_BACK(entry, entryI)\
-    ListInsertBack(entry, entryI)
+    ListInsertBack((LIST_ST *)(entry), (LIST_ST *)(entryI))
 
 
 #define LIST_DELETE(entry)\
-    ListDelet(entry)
+    ListDelet((LIST_ST *)(entry))
+
+#define LIST_NEXT_ENTRY(entry)\
+        ((void *)(((LIST_ST *)(entry))->pNext))
+    
+#define LIST_PREV_ENTRY(entry)\
+        ((void *)(((LIST_ST *)(entry))->pPrev))
 
 
-#define LIST_ENTRY(ptr, type, member) \
-    ST_CONTAINER_OF(ptr, type, member)
+#define LIST_FOREACH_FROM_HEAD(pEntry, pListHead) \
+    for((pEntry) = LIST_NEXT_ENTRY(pListHead);\
+        ((LIST_ST *)(pEntry)) != (pListHead);\
+        (pEntry) = LIST_NEXT_ENTRY(pEntry))
 
 
-#define LIST_NEXT_ENTRY(pos, type, member)\
-    LIST_ENTRY((pos)->pNext, type, member)
-
-#define LIST_PREV_ENTRY(pos, type, member)\
-    LIST_ENTRY((pos)->pPrev, type, member)
-
+#define LIST_FOREACH_FROM_TAIL(pEntry, pListHead) \
+    for((pEntry) = LIST_PREV_ENTRY(pListHead);\
+        ((LIST_ST *)(pEntry)) != (pListHead);\
+        (pEntry) = LIST_PREV_ENTRY(pEntry))
 
 
-#define LIST_FOREACH_FROM_HEAD(pEntry, pListHead, member) \
-    for(pEntry = LIST_NEXT_ENTRY(pListHead, typeof (*pEntry), member);\
-        &(pEntry)->member != (pListHead);\
-        pEntry = LIST_NEXT_ENTRY(&(pEntry)->member, typeof (*pEntry), member))
+#define LIST_FOREACH_FROM_HEAD_SAFE(pEntry, pListHead, n) \
+    for((pEntry) = LIST_NEXT_ENTRY(pListHead), (n) = LIST_NEXT_ENTRY(pEntry);\
+        ((LIST_ST *)(pEntry)) != (pListHead);\
+        (pEntry) = (n), (n) = LIST_NEXT_ENTRY(n))
 
-#define LIST_FOREACH_FROM_TAIL(pEntry, pListHead, member) \
-    for(pEntry = LIST_PREV_ENTRY(pListHead, typeof (*pEntry), member);\
-        &(pEntry)->member != (pListHead);\
-        pEntry = LIST_PREV_ENTRY(&(pEntry)->member, typeof (*pEntry), member))
-
-
-
-#define LIST_FOREACH_FROM_HEAD_SAFE(pEntry, pListHead, n, member) \
-    for(pEntry = LIST_NEXT_ENTRY(pListHead, typeof (*pEntry), member),\
-        n = LIST_NEXT_ENTRY(&(pEntry)->member, typeof (*pEntry), member);\
-        &(pEntry)->member != (pListHead);\
-        (pEntry) = (n), (n) = LIST_NEXT_ENTRY(&(n)->member, typeof (*pEntry), member))
-
-
-#define LIST_FOREACH_FROM_TAIL_SAFE(pEntry, pListHead, p, member) \
-    for(pEntry = LIST_PREV_ENTRY(pListHead, typeof (*pEntry), member),\
-        p = LIST_PREV_ENTRY(&(pEntry)->member, typeof (*pEntry), member);\
-        &(pEntry)->member != (pListHead);\
-        (pEntry) = (p), (p) = LIST_PREV_ENTRY(&(p)->member, typeof (*pEntry), member))
+#define LIST_FOREACH_FROM_TAIL_SAFE(pEntry, pListHead, p) \
+    for((pEntry) = LIST_PREV_ENTRY(pListHead), (p) = LIST_PREV_ENTRY(pEntry);\
+        ((LIST_ST *)(pEntry)) != (pListHead);\
+        (pEntry) = (p), (p) = LIST_PREV_ENTRY(p))
 
 
 #define LIST_IS_EMPTY(list)\
-    ((list)->pNext == (list))
+    (((LIST_ST *)(list))->pNext == (list))
 
 #define LIST_IS_TAIL(pListHead, entry)\
-    (pListHead == (entry)->pNext)
+    (pListHead == ((LIST_ST *)(entry))->pNext)
 
 #define LIST_SWAP(entryA, entryB)\
-    ListSwap(entryA, entryB)
+    ListSwap((LIST_ST *)(entryA), (LIST_ST *)(entryB))
 
 #ifdef __cplusplus
 }

@@ -24,8 +24,8 @@ static void *threadCb(void *pArg)
             MutexUnlock(pPool->mutex);
             continue;
         }
-        MISSION_ATTR_ST *pMission = LIST_NEXT_ENTRY(&pPool->missionList);
-        LIST_DELETE(pMission);
+        MISSION_ATTR_ST *pMission = LIST_NEXT_ENTRY(&pPool->missionList, MISSION_ATTR_ST, list);
+        LIST_DELETE(&pMission->list);
         pPool->wMissions--;
         
         MutexUnlock(pPool->mutex);
@@ -140,7 +140,7 @@ int32_t ThreadPoolDispatchMission(THREAD_POOL_ST *pPool, THREAD_POOL_MISSION pMi
     pMissionAttr->pArg = pArg;
 
     MutexLock(pPool->mutex);
-    LIST_INSERT_FRONT(&pPool->missionList, pMissionAttr);
+    LIST_INSERT_FRONT(&pPool->missionList, &pMissionAttr->list);
     pPool->wMissions++;
     MutexUnlock(pPool->mutex);
 
@@ -169,7 +169,7 @@ void ThreadPoolDestory(THREAD_POOL_ST *pPool)
     // destory all mission
     MISSION_ATTR_ST *pMission = NULL, *pNext = NULL;
     MutexLock(pPool->mutex);
-    LIST_FOREACH_FROM_HEAD_SAFE(pMission, &pPool->missionList, pNext)
+    LIST_FOREACH_FROM_HEAD_SAFE(pMission, &pPool->missionList, pNext, missionList)
     {
         LIST_DELETE(pMission);
         MmMngrFree(pMission);

@@ -2,7 +2,7 @@
 #include "MmMngr.h"
 #include "stdio.h"
 
-static bool isIPAddr(const int8_t *server)
+static bool isIPAddr(const char *server)
 {
     int32_t ip[4] = {-1, -1, -1, -1};
     
@@ -19,7 +19,7 @@ static bool isIPAddr(const int8_t *server)
 
 
 
-TCP_CLIENT_ST *TcpClientCreate(const int8_t *server, const uint16_t port, COM_PACK_PARSE_FT pParseCb)
+TCP_CLIENT_ST *TcpClientCreate(const char *server, const uint16_t port, COM_PACK_PARSE_FT pParseCb)
 {
     TCP_TRANSFER_FACTORY_ST tcpTransFact;
     TCP_CLIENT_ST *pTCPCli = NULL;

@@ -207,16 +207,16 @@ void ListTst(void)
     {
         LIST_TST_ST *pNew = MmMngrMalloc(sizeof(LIST_TST_ST));
         pNew->idx = i;
-        LIST_INSERT_BACK(&list, pNew);
+        LIST_INSERT_BACK(&list, &pNew->list);
     }
 
-    LIST_FOREACH_FROM_HEAD(pNode, &list)
+    LIST_FOREACH_FROM_HEAD(pNode, &list, list)
     {
         LOGS("list idx = %d,", pNode->idx);
     }
     LOGI("LIST_FOREACH_FROM_HEAD\r\n");
 
-    LIST_FOREACH_FROM_TAIL(pNode, &list)
+    LIST_FOREACH_FROM_TAIL(pNode, &list, list)
     {
         LOGS("list idx = %d,", pNode->idx);
     }
@@ -225,32 +225,33 @@ void ListTst(void)
 
     LIST_TST_ST *p1, *p2;
     
-    p1 = LIST_NEXT_ENTRY(&list);
-    p2 = LIST_PREV_ENTRY(&list);
-    LIST_SWAP(p1, p2);
+    p1 = LIST_NEXT_ENTRY(&list, LIST_TST_ST, list);
+    p2 = LIST_PREV_ENTRY(&list, LIST_TST_ST, list);
+    LIST_SWAP(&p1->list, &p2->list);
 
-    p1 = LIST_NEXT_ENTRY(&list);
-    p2 = LIST_PREV_ENTRY(&list);
-    LIST_SWAP(p1, p2);
+    p1 = LIST_NEXT_ENTRY(&list, LIST_TST_ST, list);
+    p2 = LIST_PREV_ENTRY(&list, LIST_TST_ST, list);
+    LIST_SWAP(&p1->list, &p2->list);
 
 
-    p1 = LIST_NEXT_ENTRY(&list);
-    p2 = LIST_NEXT_ENTRY(p2);
-    LIST_SWAP(p1, p2);
+    p1 = LIST_NEXT_ENTRY(&list, LIST_TST_ST, list);
+    p2 = LIST_NEXT_ENTRY(&p2->list, LIST_TST_ST, list);
+    LIST_SWAP(&p1->list, &p2->list);
 
-    p1 = LIST_NEXT_ENTRY(&list);
-    p2 = LIST_NEXT_ENTRY(p2);
-    LIST_SWAP(p2, p1);
+    p1 = LIST_NEXT_ENTRY(&list, LIST_TST_ST, list);
+    p2 = LIST_NEXT_ENTRY(&p2->list, LIST_TST_ST, list);
+    LIST_SWAP(&p1->list, &p2->list);
 
-    LIST_FOREACH_FROM_HEAD(pNode, &list)
+
+    LIST_FOREACH_FROM_HEAD(pNode, &list, list)
     {
         LOGS("list idx = %d,", pNode->idx);
     }
     LOGI("LIST_FOREACH_FROM_HEAD\r\n");
 
-    LIST_FOREACH_FROM_HEAD_SAFE(pNode, &list, pN)
+    LIST_FOREACH_FROM_HEAD_SAFE(pNode, &list, pN, list)
     {
-        LIST_DELETE(pNode);
+        LIST_DELETE(&pNode->list);
         LOGS("delet %d\r\n", pNode->idx);
         MmMngrFree(pNode);
     }

@@ -11,7 +11,7 @@ Date: 2022/10/12
 */
 
 
-JSON_OBJ_ST *JSONCreateObj(JSON_VAR_TP_ET tp, int32_t sz, void *data, int8_t * name)
+JSON_OBJ_ST *JSONCreateObj(JSON_VAR_TP_ET tp, int32_t sz, void *data, char * name)
 {
     JSON_OBJ_ST *pObj = MmMngrMalloc(sizeof(*pObj) + sz);
     memset(pObj, 0, sizeof(*pObj) + sz);
@@ -113,7 +113,7 @@ void JSONAddObj(JSON_OBJ_ST *dst, JSON_OBJ_ST *src)
 }
 
 
-JSON_OBJ_ST *JSONSeek(JSON_OBJ_ST *obj, int8_t * objName)
+JSON_OBJ_ST *JSONSeek(JSON_OBJ_ST *obj, char * objName)
 {
     JSON_OBJ_ST *p = NULL;
     if(!obj)
@@ -134,7 +134,7 @@ JSON_OBJ_ST *JSONSeek(JSON_OBJ_ST *obj, int8_t * objName)
     return NULL;
 }
 
-static inline int32_t PrintString(int8_t **pBuf, int32_t *pSz, int8_t * str)
+static inline int32_t PrintString(char **pBuf, int32_t *pSz, char * str)
 {
     if(pBuf)
     {
@@ -153,7 +153,7 @@ static inline int32_t PrintString(int8_t **pBuf, int32_t *pSz, int8_t * str)
 }
 
 
-static inline int32_t PrintLineHead(int8_t **buf, int32_t *bufSz, int32_t childObjDepth, bool isFormat)
+static inline int32_t PrintLineHead(char **buf, int32_t *bufSz, int32_t childObjDepth, bool isFormat)
 {
     int32_t len = 0;
     for(int32_t i =0; isFormat && i < childObjDepth; i++)
@@ -163,7 +163,7 @@ static inline int32_t PrintLineHead(int8_t **buf, int32_t *bufSz, int32_t childO
     return len;
 }
 
-static inline int32_t PrintLineTail(int8_t **buf, int32_t *bufSz, bool isFormat)
+static inline int32_t PrintLineTail(char **buf, int32_t *bufSz, bool isFormat)
 {
     int32_t len = 0;
     if(isFormat)
@@ -173,7 +173,7 @@ static inline int32_t PrintLineTail(int8_t **buf, int32_t *bufSz, bool isFormat)
     return len;
 }
 
-static inline int32_t ObjHead2Txt(JSON_OBJ_ST *pObj, int8_t **buf, int32_t *bufSz, int32_t childObjDepth, bool isFormat)
+static inline int32_t ObjHead2Txt(JSON_OBJ_ST *pObj, char **buf, int32_t *bufSz, int32_t childObjDepth, bool isFormat)
 {
     int32_t len = 0;
     if(pObj)
@@ -228,7 +228,7 @@ static inline int32_t ObjHead2Txt(JSON_OBJ_ST *pObj, int8_t **buf, int32_t *bufS
             {
                 float val = 0;
                 memcpy(&val, pObj->data, sizeof val);
-                int8_t valStr[32] = {0};
+                char valStr[32] = {0};
                 snprintf(valStr, sizeof(valStr), "%f", val);
                 len += PrintString(buf, bufSz, valStr);
             }break;
@@ -237,14 +237,14 @@ static inline int32_t ObjHead2Txt(JSON_OBJ_ST *pObj, int8_t **buf, int32_t *bufS
             {
                 int32_t val = 0;
                 memcpy(&val, pObj->data, sizeof val);
-                int8_t valStr[32] = {0};
+                char valStr[32] = {0};
                 snprintf(valStr, sizeof(valStr), "%d", val);
                 len += PrintString(buf, bufSz, valStr);
             }break;
 
             case JSON_VAR_TP_STRING:
             {
-                int8_t * val = (int8_t *)pObj->data;
+                char * val = (char *)pObj->data;
                 len += PrintString(buf, bufSz, "\"");
                 len += PrintString(buf, bufSz, val);
                 len += PrintString(buf, bufSz, "\"");
@@ -265,7 +265,7 @@ static inline int32_t ObjHead2Txt(JSON_OBJ_ST *pObj, int8_t **buf, int32_t *bufS
     return len;
 }
 
-static inline int32_t ObjTail2Txt(JSON_OBJ_ST *pObj, int8_t **buf, int32_t *bufSz, int32_t childObjDepth, bool isFormat)
+static inline int32_t ObjTail2Txt(JSON_OBJ_ST *pObj, char **buf, int32_t *bufSz, int32_t childObjDepth, bool isFormat)
 {
     int32_t len = 0;
     if(pObj)
@@ -301,7 +301,7 @@ static inline int32_t ObjTail2Txt(JSON_OBJ_ST *pObj, int8_t **buf, int32_t *bufS
 }
 
 
-static inline int32_t PrintObj(JSON_OBJ_ST *pObj, int8_t **buf, int32_t *bufSz, int32_t childObjDepth, bool isFormat)
+static inline int32_t PrintObj(JSON_OBJ_ST *pObj, char **buf, int32_t *bufSz, int32_t childObjDepth, bool isFormat)
 {
     int32_t len = 0;
     if(pObj)
@@ -326,7 +326,7 @@ static inline int32_t GetJsonPrintfBufSz(JSON_ST *pJson, bool isFormat)
 int32_t JSONPrintf(JSON_ST *pJson, bool isEnFormat)
 {
     int32_t childObjDepth = 0, sz = 0;
-    int8_t *buf = NULL;
+    char *buf = NULL;
 
     do
     {
@@ -364,7 +364,7 @@ int32_t JSONPrintf(JSON_ST *pJson, bool isEnFormat)
 }
 
 
-static inline int32_t CreateFile(int8_t * fileName, int8_t *dat, int32_t len)
+static inline int32_t CreateFile(char * fileName, char *dat, int32_t len)
 {
     if(!fileName && !dat && !len)
     {
@@ -394,7 +394,7 @@ static inline int32_t CreateFile(int8_t * fileName, int8_t *dat, int32_t len)
     return -1;
 }
 
-int32_t JSONPrint2File(JSON_ST *pJson, int8_t * fileName)
+int32_t JSONPrint2File(JSON_ST *pJson, char * fileName)
 {
     int32_t ret = -1;
     JSONPrintf(pJson, true);
@@ -403,9 +403,9 @@ int32_t JSONPrint2File(JSON_ST *pJson, int8_t * fileName)
     return ret;
 }
 
-static inline int8_t GetChFromString(int8_t * *pStr)
+static inline char GetChFromString(char * *pStr)
 {
-    int8_t ch = '\0';
+    char ch = '\0';
     if(*pStr && **pStr)
     {
         ch = **pStr;
@@ -414,10 +414,10 @@ static inline int8_t GetChFromString(int8_t * *pStr)
     return ch;
 }
 
-static inline int32_t GetStringLen(int8_t * *pTxt)
+static inline int32_t GetStringLen(char * *pTxt)
 {
     int32_t strLen = 0;
-    int8_t ch = 0;
+    char ch = 0;
 
     ch = GetChFromString(pTxt);
 
@@ -446,11 +446,11 @@ static inline int32_t GetStringLen(int8_t * *pTxt)
     return -1;
 }
 
-static inline int8_t * StringParse(int8_t * *pTxt)
+static inline char * StringParse(char * *pTxt)
 {
     int32_t strLen = 0;
-    int8_t * strBuf = NULL;
-    int8_t * str = *pTxt;
+    char * strBuf = NULL;
+    char * str = *pTxt;
     strLen = GetStringLen(pTxt);
     if(strLen > 0)
     {
@@ -465,9 +465,9 @@ static inline int8_t * StringParse(int8_t * *pTxt)
 }
 
 
-static inline int32_t GetObjStrLen(int8_t * *pTxt)
+static inline int32_t GetObjStrLen(char * *pTxt)
 {
-    int8_t ch = 0;
+    char ch = 0;
     int32_t len = 0;
 
     ch = GetChFromString(pTxt);
@@ -493,9 +493,9 @@ static inline int32_t GetObjStrLen(int8_t * *pTxt)
     return len;
 }
 
-static inline int32_t GetArrStrLen(int8_t * *pTxt)
+static inline int32_t GetArrStrLen(char * *pTxt)
 {
-    int8_t ch = 0;
+    char ch = 0;
     int32_t len = 0;
 
     ch = GetChFromString(pTxt);
@@ -521,9 +521,9 @@ static inline int32_t GetArrStrLen(int8_t * *pTxt)
     return len;
 }
 
-static inline int32_t GetItemStrLen(int8_t * *pTxt)
+static inline int32_t GetItemStrLen(char * *pTxt)
 {
-    int8_t ch = 0;
+    char ch = 0;
     int32_t len = 0;
 
     ch = GetChFromString(pTxt);
@@ -557,10 +557,10 @@ static inline int32_t GetItemStrLen(int8_t * *pTxt)
 }
 
 
-static inline int8_t * GetItemStr(int8_t * *pTxt)
+static inline char * GetItemStr(char * *pTxt)
 {
-    int8_t * str = NULL;
-    int8_t * txt = *pTxt;
+    char * str = NULL;
+    char * txt = *pTxt;
     int32_t len = GetItemStrLen(pTxt);
 
     if(len > 0)
@@ -576,7 +576,7 @@ static inline int8_t * GetItemStr(int8_t * *pTxt)
 }
 
 
-static inline void StringDestory(int8_t * *str)
+static inline void StringDestory(char * *str)
 {
     if(*str)
     {
@@ -585,9 +585,9 @@ static inline void StringDestory(int8_t * *str)
     }
 }
 
-static inline void SkipWhiteSpace(int8_t * *str)
+static inline void SkipWhiteSpace(char * *str)
 {
-    int8_t ch = 0;
+    char ch = 0;
 
     do
     {
@@ -597,35 +597,35 @@ static inline void SkipWhiteSpace(int8_t * *str)
 }
 
 
-static inline long long IntParse(int8_t * str)
+static inline long long IntParse(char * str)
 {
     return atol(str);
 }
 
 
-static inline double FloatParse(int8_t * str)
+static inline double FloatParse(char * str)
 {
     return atof(str);
 }
 
-static inline void ObjParse(int8_t * *pTxt, JSON_OBJ_ST *pObj);
+static inline void ObjParse(char * *pTxt, JSON_OBJ_ST *pObj);
 
-static inline void ArrParse(int8_t * *pTxt, JSON_OBJ_ST *pObj)
+static inline void ArrParse(char * *pTxt, JSON_OBJ_ST *pObj)
 {
-    int8_t * itemStr = NULL;
+    char * itemStr = NULL;
 
     itemStr = GetItemStr(pTxt);
 
     while(itemStr)
     {
-        int8_t * str = itemStr;
+        char * str = itemStr;
         SkipWhiteSpace(&str);
         str--;
 
         if('\"' == str[0])
         {
             str++;
-            int8_t * str1 = StringParse(&str);
+            char * str1 = StringParse(&str);
             JSON_OBJ_ST *pStrObj = JSONCreateObj(JSON_VAR_TP_STRING, strlen(str1) + 1, str1, NULL);
             JSONAddObj(pObj, pStrObj);
 
@@ -676,10 +676,10 @@ static inline void ArrParse(int8_t * *pTxt, JSON_OBJ_ST *pObj)
     }
 }
 
-static inline void ObjParse(int8_t * *pTxt, JSON_OBJ_ST *pObj)
+static inline void ObjParse(char * *pTxt, JSON_OBJ_ST *pObj)
 {
-    int8_t * objName = NULL;
-    int8_t ch = 0;
+    char * objName = NULL;
+    char ch = 0;
     do
     {
         ch = GetChFromString(pTxt);
@@ -692,8 +692,8 @@ static inline void ObjParse(int8_t * *pTxt, JSON_OBJ_ST *pObj)
 
             case ':':
             {
-                int8_t * itemStr = GetItemStr(pTxt);
-                int8_t * str = itemStr;
+                char * itemStr = GetItemStr(pTxt);
+                char * str = itemStr;
                 SkipWhiteSpace(&str);
                 str--;
                 
@@ -712,7 +712,7 @@ static inline void ObjParse(int8_t * *pTxt, JSON_OBJ_ST *pObj)
                 else if('\"' == str[0])
                 {
                     str++;
-                    int8_t * str1 = StringParse(&str);
+                    char * str1 = StringParse(&str);
                     if(str1)
                     {
                         JSON_OBJ_ST *pStrObj = JSONCreateObj(JSON_VAR_TP_STRING, strlen(str1) + 1, str1, objName);
@@ -767,9 +767,9 @@ static inline void ObjParse(int8_t * *pTxt, JSON_OBJ_ST *pObj)
     while(ch);
 }
 
-static inline int8_t BracketCheck(int8_t * *pTxt, bool *result)
+static inline char BracketCheck(char * *pTxt, bool *result)
 {
-    int8_t ch = 0, ch2 = 0;
+    char ch = 0, ch2 = 0;
     do
     {
         ch = GetChFromString(pTxt);
@@ -816,11 +816,11 @@ static inline int8_t BracketCheck(int8_t * *pTxt, bool *result)
 }
 
 
-bool IsJsonTxtLegal(int8_t * txt)
+bool IsJsonTxtLegal(char * txt)
 {
-    int8_t * str = txt;
+    char * str = txt;
     bool result = true;
-    int8_t errBuf[256] = {0};
+    char errBuf[256] = {0};
 
     BracketCheck(&str, &result);
     if(false == result)
@@ -855,10 +855,10 @@ bool IsJsonTxtLegal(int8_t * txt)
 }
 
 
-JSON_ST *JSONParseStr(int8_t * txt)
+JSON_ST *JSONParseStr(char * txt)
 {
     JSON_ST *pJson = NULL;
-    int8_t ch = 0;
+    char ch = 0;
     do
     {
         if(!txt)
@@ -893,7 +893,7 @@ JSON_ST *JSONParseStr(int8_t * txt)
 }
 
 
-JSON_ST *JSONParseFile(int8_t * file)
+JSON_ST *JSONParseFile(char * file)
 {
     JSON_ST *pJson = NULL;
     (void) file;
@@ -902,7 +902,7 @@ JSON_ST *JSONParseFile(int8_t * file)
 
     if(fpParse)
     {
-        int8_t * str = NULL;
+        char * str = NULL;
         
         fseek(fpParse, 0, SEEK_END);
         int32_t fileSz = ftell(fpParse);

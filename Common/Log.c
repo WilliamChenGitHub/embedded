@@ -4,7 +4,7 @@
 LOG_ATTR_ST *gPLogAttr = NULL;
 
 
-static void FilePutS(LOG_ATTR_ST *pLog, int8_t *string, int32_t len)
+static void FilePutS(LOG_ATTR_ST *pLog, char *string, int32_t len)
 {
     FILE_LOG_ATTR_ST *pFLog = (FILE_LOG_ATTR_ST *)pLog;
     fwrite(string, 1, len, pFLog->pOutF);
@@ -59,7 +59,7 @@ void LOGInit(LOG_ATTR_ST *pLogAttr)
     gPLogAttr = pLogAttr;
 }
 
-void LOGPrintf(  LOG_LEVEL_ET lvl, int8_t *pFormat, ...)
+void LOGPrintf(  LOG_LEVEL_ET lvl, char *pFormat, ...)
 {
     if(!gPLogAttr)
     {
@@ -71,7 +71,7 @@ void LOGPrintf(  LOG_LEVEL_ET lvl, int8_t *pFormat, ...)
         return ;
     }
 
-    int8_t buf[256] = {0};
+    char buf[256] = {0};
     va_list valist;
     va_start(valist, pFormat);
     vsnprintf(buf, sizeof buf, pFormat, valist);
@@ -92,7 +92,7 @@ void LOGDeinit(void)
     gPLogAttr = NULL;
 }
 
-void LOGArrData(int8_t *pArrName, uint8_t *pDat, int32_t len)
+void LOGArrData(char *pArrName, uint8_t *pDat, int32_t len)
 {
 
     LOGS("%s, len = %d", pArrName, len);

@@ -32,9 +32,9 @@ void HashTableDestory(HASH_TABLE_ST *pHTbl)
     
     for(uint32_t i = 0; i < pHTbl->sz; i++)
     {
-        LIST_FOREACH_FROM_HEAD_SAFE(pEntry, &pHTbl->listTbl[i], pNext)
+        LIST_FOREACH_FROM_HEAD_SAFE(pEntry, &pHTbl->listTbl[i], pNext, list)
         {
-            LIST_DELETE(pEntry);
+            LIST_DELETE(&pEntry->list);
             if(pEntry->pNodeDestory)
             {
                 pEntry->pNodeDestory(pEntry);
@@ -59,7 +59,7 @@ HASH_NODE_ST *HashTableLookup(HASH_TABLE_ST *pHTbl, uint32_t key)
 
     uint32_t idx = Hash(pHTbl, key);
 
-    LIST_FOREACH_FROM_HEAD(pNode, &pHTbl->listTbl[idx])
+    LIST_FOREACH_FROM_HEAD(pNode, &pHTbl->listTbl[idx], list)
     {
         if(pNode->key == key)
         {
@@ -85,7 +85,7 @@ int32_t HashTableInsert(HASH_TABLE_ST *pHTbl, HASH_NODE_ST *pNode)
 
     idx = Hash(pHTbl, pNode->key); // calculater hash value
 
-    LIST_INSERT_BACK(&pHTbl->listTbl[idx], pNode);
+    LIST_INSERT_BACK(&pHTbl->listTbl[idx], &pNode->list);
 
     pHTbl->ocpt++;
     return 0;
@@ -98,12 +98,12 @@ int32_t HashTableDelet(HASH_TABLE_ST *pHTbl, uint32_t key)
     
     idx = Hash(pHTbl, key); // calculater hash value
 
-    LIST_FOREACH_FROM_HEAD_SAFE(pEntry, &pHTbl->listTbl[idx], pNext)
+    LIST_FOREACH_FROM_HEAD_SAFE(pEntry, &pHTbl->listTbl[idx], pNext, list)
     {
         if(pEntry->key == key)
         {
             pHTbl->ocpt--;
-            LIST_DELETE(pEntry);
+            LIST_DELETE(&pEntry->list);
             if(pEntry->pNodeDestory)
             {
                 pEntry->pNodeDestory(pEntry);
@@ -122,7 +122,7 @@ void HashTablePrint(HASH_TABLE_ST *pHTbl)
     
     for(uint32_t i = 0; i < pHTbl->sz; i++)
     {
-        LIST_FOREACH_FROM_HEAD(pEntry, &pHTbl->listTbl[i])
+        LIST_FOREACH_FROM_HEAD(pEntry, &pHTbl->listTbl[i], list)
         {
             LOGI("idx = %d, key = %d\r\n", i, pEntry->key);
         }

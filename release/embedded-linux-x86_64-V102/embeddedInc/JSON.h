@@ -27,7 +27,7 @@ typedef enum
 typedef struct __JSON_OBJ
 {
     struct __JSON_OBJ *pNext, *pChild;
-    char * name;
+    int8_t * name;
     JSON_VAR_TP_ET type;
     int8_t data[0];
 }JSON_OBJ_ST;
@@ -35,7 +35,7 @@ typedef struct __JSON_OBJ
 typedef struct __JSON
 {
     JSON_OBJ_ST *pRoot;
-    char * prtBuf;
+    int8_t * prtBuf;
     int32_t prtBufSz;
     bool isPrtStrFormat;
 }JSON_ST;
@@ -51,17 +51,17 @@ extern "C"{
 JSON_ST *JSONCreate(void);
 bool JSONDestory(JSON_ST *pJson);
 
-JSON_OBJ_ST *JSONCreateObj(JSON_VAR_TP_ET tp, int32_t sz, void *data, char *name);
+JSON_OBJ_ST *JSONCreateObj(JSON_VAR_TP_ET tp, int32_t sz, void *data, int8_t *name);
 void JSONAddObj(JSON_OBJ_ST *dst, JSON_OBJ_ST *src);
 bool JSONDeletObj(JSON_OBJ_ST *obj);
 
-JSON_OBJ_ST *JSONSeek(JSON_OBJ_ST *obj, char * objName);
+JSON_OBJ_ST *JSONSeek(JSON_OBJ_ST *obj, int8_t * objName);
 
 int32_t JSONPrintf(JSON_ST *pJson, bool isEnFormat);
-int32_t JSONPrint2File(JSON_ST *pJson, char * fileName);
+int32_t JSONPrint2File(JSON_ST *pJson, int8_t * fileName);
 
-JSON_ST *JSONParseStr(char * txt);
-JSON_ST *JSONParseFile(char * file);
+JSON_ST *JSONParseStr(int8_t * txt);
+JSON_ST *JSONParseFile(int8_t * file);
 
 int32_t JSONGetArrSz(JSON_OBJ_ST *pArr);
 JSON_OBJ_ST *JSONGetArrItem(JSON_OBJ_ST *pArr, int32_t idx);

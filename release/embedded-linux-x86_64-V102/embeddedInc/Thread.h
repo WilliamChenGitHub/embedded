@@ -56,7 +56,7 @@ void MutexLock(MUTEX_T mutex);
 
 void MutexUnlock(MUTEX_T mutex);
 
-THREAD_T ThreadCreate(THREAD_FUNC_FT pFunc, void *pArg, uint32_t stackSz, bool isDetached, uint32_t priority, char *name);
+THREAD_T ThreadCreate(THREAD_FUNC_FT pFunc, void *pArg, uint32_t stackSz, bool isDetached, uint32_t priority, int8_t *name);
 
 void ThreadJoin(THREAD_T thread);
 
