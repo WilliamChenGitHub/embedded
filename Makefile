@@ -1,6 +1,7 @@
 PLATFORM_LINUX := linux
 PLATFORM_WINDOWS := windows
 PLATFORM_FREE_RTOS := freeRtos
+PLATFORM_RV1106 := rv1106
 
 CCFLAGS := -fpic
 
@@ -33,10 +34,20 @@ ifeq ($(findstring $(PLATFORM_FREE_RTOS),$(MAKECMDGOALS)),$(PLATFORM_FREE_RTOS))
     CCFLAGS += 
     MACROFLAGS := -U__unix__ -U__linux__
 else
+
+ifeq ($(findstring $(PLATFORM_RV1106), $(MAKECMDGOALS)), $(PLATFORM_RV1106))
+    PLATFORM := $(PLATFORM_RV1106)
+    WORDSIZE := _WORDSIZE=32
+    CROSS := arm-rockchip830-linux-uclibcgnueabihf-
+    CCFLAGS +=
+
+else
     PLATFORM := $(PLATFORM_LINUX)
     WORDSIZE := __WORDSIZE=64
     CROSS :=
     CCFLAGS += -std=gnu11 -fpic
+endif
+
 endif
 
 endif
@@ -82,11 +93,13 @@ HEAD_FILES := $(foreach n,$(INC_PATH),$(wildcard $(n)/*.h))
 
 #include $(DEPS)
 
-.PHONY : all clean distclean $(PLATFORM_LINUX) $(PLATFORM_WINDOWS) $(PLATFORM_FREE_RTOS) $(DEBUG) install test release
+.PHONY : all clean distclean $(PLATFORM_LINUX) $(PLATFORM_WINDOWS) $(PLATFORM_FREE_RTOS) $(DEBUG) $(PLATFORM_RV1106) install test release
 
 $(PLATFORM_LINUX) : clean all
 
 $(PLATFORM_FREE_RTOS) : clean all
+
+$(PLATFORM_RV1106) : clean all
 
 VERSION_STR := $(subst 0x,V,$(VERSION_BCD))
 RELEASE_NAME := $(OUT)-$(PLATFORM)-$(ARCH)-$(VERSION_STR)$(DBGSTR)
