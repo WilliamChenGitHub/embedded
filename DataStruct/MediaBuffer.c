@@ -24,6 +24,31 @@ int MediaBufferPush(MEDIA_BUFFER_ST *pMediaBuf, void *pBuf, int sz)
 }
 
 
+int MediaBufferPushBufList(MEDIA_BUFFER_ST *pMediaBuf, QUEUE_BUF_LIST_ST *pBufList, int totalSz)
+{
+    int szHead = 0;
+
+    szHead = totalSz;
+    
+    MutexLock(pMediaBuf->mutex);
+
+    if(CalcQueueFreeSz(&pMediaBuf->queue) < (totalSz + sizeof(szHead)))
+    {
+        MutexUnlock(pMediaBuf->mutex);
+        LOGE("not enough mem\r\n");
+        return -1;
+    }
+
+    QueueMultPush(&pMediaBuf->queue, &szHead, sizeof szHead);
+    QueuePushBufList(&pMediaBuf->queue, pBufList, totalSz);
+    
+    pMediaBuf->itemCnt++;
+    MutexUnlock(pMediaBuf->mutex);
+    return 0;
+}
+
+
+
 int MediaBufGetNextItemSz(MEDIA_BUFFER_ST *pMediaBuf)
 {
     int sz = 0;

@@ -19,6 +19,7 @@ extern "C"
 {
 #endif
 
+int MediaBufferPushBufList(MEDIA_BUFFER_ST *pMediaBuf, QUEUE_BUF_LIST_ST *pBufList, int totalSz);
 
 int MediaBufferPush(MEDIA_BUFFER_ST *pMediaBuf, void *pBuf, int sz);
 
