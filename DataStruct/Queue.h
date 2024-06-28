@@ -32,6 +32,11 @@ typedef struct __Queue
     uint8_t buf[0];
 }QUEUE_ST;
 
+typedef struct
+{
+    void *pBuf;
+    int sz;
+}QUEUE_BUF_LIST_ST;
 
 #ifdef __cplusplus
 extern "C" 
@@ -266,6 +271,60 @@ static inline int32_t QueueMultPush(QUEUE_ST * pQueue, void *pObjs, int32_t push
 
 #if TOTAL_POP_PUSH_STATISTICS
     pQueue->totalPushed += pushLen;
+#endif
+
+#if MAX_USED_STATISTICS
+    int32_t datLen = CalcQueueDataSz(pQueue);
+    if(datLen > pQueue->maxUsd)
+    {
+        pQueue->maxUsd = datLen;
+    }
+#endif
+
+    return 0;
+}
+
+
+// push a buffer list , be used to push a not continuous memory space
+static inline int32_t QueuePushBufList(QUEUE_ST * pQueue, QUEUE_BUF_LIST_ST *pObjs, int32_t totalLen)
+{
+    uint8_t *pBuf= NULL;
+    int32_t temp = 0;
+
+    if(CalcQueueFreeSz(pQueue) < totalLen)
+    {
+#if OVERFLOW_FLAG_STATISTICS
+        pQueue->isOverflow = 1;
+        pQueue->losted += totalLen;
+#endif
+        return -1;
+    }
+
+    for(QUEUE_BUF_LIST_ST *p = pObjs; p->sz; p++)
+    {
+        pBuf = pQueue->buf + pQueue->elemSz * pQueue->wIdx;
+        
+        temp = pQueue->nbOfElem - pQueue->wIdx;
+        
+        if(temp >= p->sz) // It can be done once
+        {
+            memcpy(pBuf, p->pBuf, p->sz * pQueue->elemSz);
+        }
+        else
+        {
+            memcpy(pBuf, p->pBuf, temp * pQueue->elemSz);
+
+            pBuf = (uint8_t *)p->pBuf + temp * pQueue->elemSz;
+            temp = p->sz - temp;
+            
+            memcpy(pQueue->buf, pBuf, temp * pQueue->elemSz); // copy left
+        }
+    }
+    
+    pQueue->wIdx = (pQueue->wIdx + totalLen )% pQueue->nbOfElem;
+
+#if TOTAL_POP_PUSH_STATISTICS
+    pQueue->totalPushed += totalLen;
 #endif
 
 #if MAX_USED_STATISTICS
