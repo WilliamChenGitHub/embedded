@@ -19,7 +19,7 @@ typedef struct __tcpCli
 extern "C"{
 #endif
 
-TCP_CLIENT_ST *TcpClientCreate(const int8_t *server, const uint16_t port, COM_PACK_PARSE_FT pParseCb);
+TCP_CLIENT_ST *TcpClientCreate(const char *server, const uint16_t port, COM_PACK_PARSE_FT pParseCb);
 
 void TcpClientDestory(TCP_CLIENT_ST *pTCPCli);
 

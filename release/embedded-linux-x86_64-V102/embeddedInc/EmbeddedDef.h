@@ -8,10 +8,10 @@
 typedef int32_t SOCKET_T;
 
 
-#define ST_OFFSET_OF(TYPE, MEMBER) ((uint64_t) &((TYPE *)0)->MEMBER)
+#define ST_OFFSET_OF(TYPE, MEMBER) ((size_t) &((TYPE *)0)->MEMBER)
 
 #define ST_CONTAINER_OF(ptr, type, member) \
-((type*)((uint64_t)(ptr) - ST_OFFSET_OF(type, member)))
+((type*)((char *)(ptr) - ST_OFFSET_OF(type, member)))
 
 
 #ifndef __WORDSIZE

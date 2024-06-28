@@ -1,7 +1,7 @@
 #include "MediaBuffer.h"
 
 
-int MediaBufferPush(MEDIA_BUFFER_ST *pMediaBuf, void *pBuf, int sz)
+int MediaBufPush(MEDIA_BUFFER_ST *pMediaBuf, void *pBuf, int sz)
 {
     QUEUE_BUF_LIST_ST bufList[3] = {0};
 
@@ -24,7 +24,7 @@ int MediaBufferPush(MEDIA_BUFFER_ST *pMediaBuf, void *pBuf, int sz)
 }
 
 
-int MediaBufferPushBufList(MEDIA_BUFFER_ST *pMediaBuf, QUEUE_BUF_LIST_ST *pBufList, int totalSz)
+int MediaBufPushBufList(MEDIA_BUFFER_ST *pMediaBuf, QUEUE_BUF_LIST_ST *pBufList, int totalSz)
 {
     int szHead = 0;
 
@@ -40,6 +40,7 @@ int MediaBufferPushBufList(MEDIA_BUFFER_ST *pMediaBuf, QUEUE_BUF_LIST_ST *pBufLi
     }
 
     QueueMultPush(&pMediaBuf->queue, &szHead, sizeof szHead);
+    
     QueuePushBufList(&pMediaBuf->queue, pBufList, totalSz);
     
     pMediaBuf->itemCnt++;
@@ -62,7 +63,7 @@ int MediaBufGetNextItemSz(MEDIA_BUFFER_ST *pMediaBuf)
     return sz;
 }
 
-int MediaBufferPop(MEDIA_BUFFER_ST *pMediaBuf, void *pBuf)
+int MediaBufPop(MEDIA_BUFFER_ST *pMediaBuf, void *pBuf)
 {
     int sz = 0;
     MutexLock(pMediaBuf->mutex);

@@ -1,7 +1,7 @@
 #include "test.h"
 #include "Log.h"
 #include "ThreadPool.h"
-
+#include "MediaBuffer.h"
 
 static int32_t tcpCliMsgParse(COM_PORT_ATTR_ST *pComPort,  COM_PACK_ST *pPack, int32_t *pExecRet)
 {
@@ -287,6 +287,91 @@ static void *threadTest(void *pArg)
 }
 
 
+static void mediaBufTest(void)
+{
+    char *testStr1 = "puma are large cat like animal which are found in American, when reports cam into london zoo than a wild puma had been spottd forty five miles south of London";
+    
+    QUEUE_BUF_LIST_ST bufList[3] = {0};
+    
+    MEDIA_BUFFER_ST *pMediaBuf = MediaBufCreate(1024 * 1024 * 10);
+    if(!pMediaBuf)
+    {
+        LOGE("media buff create failed\r\n");
+        goto err1;
+    }
+
+    int len1 = 22;
+
+    LOGI("total len = %d\r\n", strlen(testStr1));
+    
+    bufList[0].pBuf = testStr1;
+    bufList[0].sz = len1;
+    bufList[1].pBuf = &testStr1[len1];
+    bufList[1].sz = strlen(testStr1) - len1;
+    
+    for(int i = 0; i  < 1000; i++)
+    {
+        if(MediaBufPushBufList(pMediaBuf, bufList, bufList[0].sz + bufList[1].sz))
+        {
+            LOGE("push failed\r\n");
+            goto err2;
+        }
+    }
+
+    char buf[1024] = {0};
+    
+    for(int i = 0; i  < 1000; i++)
+    {
+        if(MediaBufPop(pMediaBuf, buf))
+        {
+            LOGE("pop failed\r\n");
+            goto err2;
+        }
+        
+        //LOGI("pop = %s\r\n", buf);
+
+        if(strcmp(buf, testStr1))
+        {
+            LOGE("cmp %d err = %s\r\n", i, buf);
+        }
+    }
+
+    for(int i = 0; i  < 1000; i++)
+    {
+        if(MediaBufPush(pMediaBuf, testStr1, strlen(testStr1)))
+        {
+            LOGE("222 push failed\r\n");
+            goto err2;
+        }
+    }
+
+    
+    for(int i = 0; i  < 1000; i++)
+    {
+        if(MediaBufPop(pMediaBuf, buf))
+        {
+            LOGE("222 pop failed\r\n");
+            goto err2;
+        }
+        
+        //LOGI("222 pop = %s\r\n", buf);
+
+        if(strcmp(buf, testStr1))
+        {
+            LOGE("222 cmp %d err = %s\r\n", i, buf);
+        }
+    }
+    
+    MediaBufDestroy(pMediaBuf);
+
+    return;
+err2:
+    MediaBufDestroy(pMediaBuf);
+
+err1:
+    return ;
+}
+
 int main(int argc, char **argv)
 {
     (void) argc;
@@ -326,6 +411,7 @@ int main(int argc, char **argv)
     ThreadJoin(thread);
 
     HashTableTst();
+    mediaBufTest();
 
 
     TCPSerCliTst(argv[1]);

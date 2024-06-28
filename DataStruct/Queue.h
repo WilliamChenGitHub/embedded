@@ -319,9 +319,9 @@ static inline int32_t QueuePushBufList(QUEUE_ST * pQueue, QUEUE_BUF_LIST_ST *pOb
             
             memcpy(pQueue->buf, pBuf, temp * pQueue->elemSz); // copy left
         }
+        
+        pQueue->wIdx = (pQueue->wIdx + p->sz )% pQueue->nbOfElem;
     }
-    
-    pQueue->wIdx = (pQueue->wIdx + totalLen )% pQueue->nbOfElem;
 
 #if TOTAL_POP_PUSH_STATISTICS
     pQueue->totalPushed += totalLen;

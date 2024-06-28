@@ -31,7 +31,7 @@ typedef enum
 extern "C"{
 #endif
 
-void LOGPrintf(LOG_LEVEL_ET lvl, int8_t *pFormat, ...);
+void LOGPrintf(LOG_LEVEL_ET lvl, char *pFormat, ...);
 
 #define PRINTF(lvl, format, ...) LOGPrintf(lvl, format, ##__VA_ARGS__)
 
@@ -52,7 +52,7 @@ void LOGPrintf(LOG_LEVEL_ET lvl, int8_t *pFormat, ...);
 struct __logAttr;
 
 
-typedef void (*LOG_PUTS_FT)(struct __logAttr *pLog, int8_t *string, int32_t len);
+typedef void (*LOG_PUTS_FT)(struct __logAttr *pLog, char *string, int32_t len);
 typedef int32_t (*LOG_GETC_FT)(struct __logAttr *pLog);
 typedef void (*LOG_DEINIT_FT)(struct __logAttr *pLog);
 typedef void (*LOG_RX_FT)(struct __logAttr *pLog, uint8_t *pDat, int32_t len);
@@ -87,7 +87,7 @@ void LOGSetLevel(LOG_LEVEL_ET level);
 
 void LOGInit(LOG_ATTR_ST *pLogAttr);
 
-void LOGArrData(int8_t *pArrName, uint8_t *pDat, int32_t len);
+void LOGArrData(char *pArrName, uint8_t *pDat, int32_t len);
 
 void LOGRx(uint8_t *pDat, int32_t len);
 
