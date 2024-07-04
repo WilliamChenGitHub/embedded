@@ -25,7 +25,7 @@ ATTRIBUTE_WEAK uint64_t GetRealTickNs(void)
 
     clock_gettime(CLOCK_REALTIME, &ts);
 
-    ns = ts.tv_nsec + ts.tv_sec * 1000000000;
+    ns = ts.tv_nsec + (uint64_t)ts.tv_sec * 1000000000;
 
     return ns;
 }
@@ -37,7 +37,7 @@ ATTRIBUTE_WEAK uint64_t GetMonotonicTickNs(void)
 
     clock_gettime(CLOCK_MONOTONIC, &ts);
 
-    ns = ts.tv_nsec + ts.tv_sec * 1000000000;
+    ns = ts.tv_nsec + (uint64_t)ts.tv_sec * 1000000000;
 
     return ns;
 }

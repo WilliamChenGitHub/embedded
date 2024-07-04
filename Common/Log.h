@@ -36,7 +36,7 @@ void LOGPrintf(LOG_LEVEL_ET lvl, char *pFormat, ...);
 #define PRINTF(lvl, format, ...) LOGPrintf(lvl, format, ##__VA_ARGS__)
 
 #define LOG_PROTO(lvl, type, color, format, ...)\
-    PRINTF(lvl, color"%s[%s(%d)%lldms]"format"\033[0m", type, __func__, __LINE__, GetMonotonicTickNs() / 1000000, ##__VA_ARGS__)
+    PRINTF(lvl, color"%s[%s(%d)%llums]"format"\033[0m", type, __func__, __LINE__, GetMonotonicTickNs() / 1000000, ##__VA_ARGS__)
 
 #define LOG_SIMPLE(lvl, format, ...)\
     PRINTF(lvl, format, ##__VA_ARGS__)

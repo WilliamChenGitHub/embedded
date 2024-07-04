@@ -56,7 +56,6 @@ int MediaBufGetNextItemSz(MEDIA_BUFFER_ST *pMediaBuf)
 
     if(QueueMultRead(&pMediaBuf->queue, &sz, sizeof sz))
     {
-        LOGE("read buf item sz failed\r\n");
         return -1;
     }
     
@@ -70,15 +69,13 @@ int MediaBufPop(MEDIA_BUFFER_ST *pMediaBuf, void *pBuf)
     if(QueueMultPop(&pMediaBuf->queue, &sz, sizeof sz))
     {
         MutexUnlock(pMediaBuf->mutex);
-        LOGE("get buf item sz failed\r\n");
         return -1;
     }
 
     if(QueueMultPop(&pMediaBuf->queue, pBuf, sz))
     {
         MutexUnlock(pMediaBuf->mutex);
-        LOGE("get data failed\r\n");
-        return -1;
+        return -2;
     }
     
     pMediaBuf->itemCnt--;
