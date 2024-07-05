@@ -52,6 +52,16 @@ int32_t FileLOGCreate(LOG_ATTR_ST *pLogAttr, FILE *pInF, FILE *pOutF)
     return 0;
 }
 
+int32_t FileLOGDestroy(LOG_ATTR_ST *pLogAttr)
+{
+    FILE_LOG_ATTR_ST *pFLog = (FILE_LOG_ATTR_ST *)pLogAttr;
+
+    pLogAttr->pVptr = NULL;
+    pFLog->pInF = NULL;
+    pFLog->pOutF = NULL;
+    
+    return 0;
+}
 
 
 void LOGInit(LOG_ATTR_ST *pLogAttr)

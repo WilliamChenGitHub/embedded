@@ -95,6 +95,7 @@ int32_t LOGGetCh(void);
 
 int32_t FileLOGCreate(LOG_ATTR_ST *pLogAttr, FILE *pInF, FILE *pOutF);
 
+int32_t FileLOGDestroy(LOG_ATTR_ST *pLogAttr);
 
 #ifdef __cplusplus
 }
