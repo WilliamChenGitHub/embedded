@@ -169,11 +169,10 @@ void ThreadPoolDestory(THREAD_POOL_ST *pPool)
     // destory all mission
     MISSION_ATTR_ST *pMission = NULL, *pNext = NULL;
     MutexLock(pPool->mutex);
-    LIST_FOREACH_FROM_HEAD_SAFE(pMission, &pPool->missionList, pNext, missionList)
+    LIST_FOREACH_FROM_HEAD_SAFE(pMission, &pPool->missionList, pNext, list)
     {
         LIST_DELETE(pMission);
         MmMngrFree(pMission);
-        LOGI("p%x\r\n", pMission);
     }
     MutexUnlock(pPool->mutex);
 #endif

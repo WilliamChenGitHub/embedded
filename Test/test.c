@@ -261,21 +261,23 @@ void ListTst(void)
 void mission(void *pArg)
 {
     int32_t *pI = (int32_t *) pArg;
-    LOGI("arg = %d\r\n", *pI);
+    LOGI("mission = %d\r\n", *pI);
+    sleep(1);
+    LOGI("mission done = %d\r\n", *pI);
 }
 
 
 void ThreadPoolTst(void)
 {
     static int32_t i = 0, iarr[100] = {0};
-    THREAD_POOL_ST *pTp = ThreadPoolCreate(100, 1024 * 3);
+    THREAD_POOL_ST *pTp = ThreadPoolCreate(10, 1024 * 3);
 
-    for(i = 0; i < 10; i++)
+    for(i = 0; i < 100; i++)
     {
         iarr[i] = i;
         ThreadPoolDispatchMission(pTp, mission, &iarr[i]);
     }
-
+    LOGI("dispatch done\r\n");
     ThreadPoolDestory(pTp);
 }
 
