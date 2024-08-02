@@ -379,9 +379,9 @@ int main(int argc, char **argv)
     (void) argc;
     (void) argv;
     FILE_LOG_ATTR_ST log;
-    FileLOGCreate((LOG_ATTR_ST *)&log, stdin, stdout);
+    FileLOGCreate(&log, stdin, stdout);
     LOGInit((LOG_ATTR_ST *)&log);
-    LOGSetLevel(LOG_LEVEL_DBG);
+    LOGSetLevel(&log.attr, LOG_LEVEL_DBG);
 
     LOGS("LOGS\r\n");
     
@@ -418,7 +418,8 @@ int main(int argc, char **argv)
 
     TCPSerCliTst(argv[1]);
 
-    LOGDeinit();
+    LOGDeinit(&log.attr);
+    FileLOGDestroy(&log);
     return 0;
 }
 

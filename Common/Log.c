@@ -4,10 +4,10 @@
 LOG_ATTR_ST *gPLogAttr = NULL;
 
 
-static void FilePutS(LOG_ATTR_ST *pLog, char *string, int32_t len)
+static int32_t FilePutS(LOG_ATTR_ST *pLog, char *string, int32_t len)
 {
     FILE_LOG_ATTR_ST *pFLog = (FILE_LOG_ATTR_ST *)pLog;
-    fwrite(string, 1, len, pFLog->pOutF);
+    return fwrite(string, 1, len, pFLog->pOutF);
 }
 
 
@@ -27,58 +27,61 @@ static void FileDeinit(LOG_ATTR_ST *pLog)
     (void) pLog;
 }
 
-static void FileRx(LOG_ATTR_ST *pLog, uint8_t *pDat, int32_t len)
+static int32_t FileInit(LOG_ATTR_ST *pLog)
+{
+    (void) pLog;
+    return 0;
+}
+
+
+static int32_t FileRx(LOG_ATTR_ST *pLog, uint8_t *pDat, int32_t len)
 {
     (void) pLog;
     (void) pDat;
     (void) len;
+    return 0;
 }
 
-int32_t FileLOGCreate(LOG_ATTR_ST *pLogAttr, FILE *pInF, FILE *pOutF)
+int32_t FileLOGCreate(FILE_LOG_ATTR_ST *pLogAttr, FILE *pInF, FILE *pOutF)
 {
-    FILE_LOG_ATTR_ST *pFLog = (FILE_LOG_ATTR_ST *)pLogAttr;
     static LOG_VTBL_ST logVptbl = 
     {
         FilePutS,
         FileGetCh,
         FileRx,
         FileDeinit,
+        FileInit,
     };
 
-    pLogAttr->pVptr = &logVptbl;
-    pFLog->pInF = pInF;
-    pFLog->pOutF = pOutF;
+    pLogAttr->attr.pVptr = &logVptbl;
+    pLogAttr->pInF = pInF;
+    pLogAttr->pOutF = pOutF;
     
     return 0;
 }
 
-int32_t FileLOGDestroy(LOG_ATTR_ST *pLogAttr)
+int32_t FileLOGDestroy(FILE_LOG_ATTR_ST *pLogAttr)
 {
-    FILE_LOG_ATTR_ST *pFLog = (FILE_LOG_ATTR_ST *)pLogAttr;
-
-    pLogAttr->pVptr = NULL;
-    pFLog->pInF = NULL;
-    pFLog->pOutF = NULL;
+    pLogAttr->attr.pVptr = NULL;
+    pLogAttr->pInF = NULL;
+    pLogAttr->pOutF = NULL;
     
     return 0;
 }
 
 
-void LOGInit(LOG_ATTR_ST *pLogAttr)
-{
-    gPLogAttr = pLogAttr;
-}
 
-void LOGPrintf(  LOG_LEVEL_ET lvl, char *pFormat, ...)
+
+int32_t LOGPrintf(  LOG_LEVEL_ET lvl, char *pFormat, ...)
 {
     if(!gPLogAttr)
     {
-        return ;
+        return -1;
     }
 
     if(lvl < gPLogAttr->logLevel)
     {
-        return ;
+        return -2;
     }
 
     char buf[256] = {0};
@@ -86,49 +89,55 @@ void LOGPrintf(  LOG_LEVEL_ET lvl, char *pFormat, ...)
     va_start(valist, pFormat);
     vsnprintf(buf, sizeof buf, pFormat, valist);
     va_end(valist);
-    gPLogAttr->pVptr->pPutS(gPLogAttr, buf, (int32_t)strlen(buf));
+    return gPLogAttr->pVptr->pPutS(gPLogAttr, buf, (int32_t)strlen(buf));
 }
 
 
 
-void LOGSetLevel(LOG_LEVEL_ET level)
+void LOGSetLevel(LOG_ATTR_ST *pLogAttr, LOG_LEVEL_ET level)
 {
-    gPLogAttr->logLevel = level;
+    pLogAttr->logLevel = level;
 }
 
-void LOGDeinit(void)
-{
-    gPLogAttr->pVptr->pDeinit(gPLogAttr);
-    gPLogAttr = NULL;
-}
 
-void LOGArrData(char *pArrName, uint8_t *pDat, int32_t len)
+int32_t LOGInit(LOG_ATTR_ST *pLogAttr)
 {
-
-    LOGS("%s, len = %d", pArrName, len);
-    for(int32_t j = 0; j < len; j++)
+    if(pLogAttr && pLogAttr->pVptr && pLogAttr->pVptr->pInit)
     {
-        if(j % 8 == 0)
-        {
-            LOGS("\r\n");
-        }
-
-        LOGS("0x%02x,", (uint8_t)pDat[j]);
-
+        gPLogAttr = pLogAttr;
+        return pLogAttr->pVptr->pInit(pLogAttr);
     }
-    LOGS("\r\n");
+    
+    return -1;
 }
 
-
-
-void LOGRx(uint8_t *pDat, int32_t len)
+void LOGDeinit(LOG_ATTR_ST *pLogAttr)
 {
-    gPLogAttr->pVptr->pLogRx(gPLogAttr, pDat, len);
+    if(pLogAttr && pLogAttr->pVptr && pLogAttr->pVptr->pDeinit)
+    {
+        gPLogAttr = NULL;
+        pLogAttr->pVptr->pDeinit(pLogAttr);
+    }
 }
 
-int32_t LOGGetCh(void)
+int32_t LOGRx(LOG_ATTR_ST *pLogAttr, uint8_t *pDat, int32_t len)
 {
-    return gPLogAttr->pVptr->pGetC(gPLogAttr);
+    if(pLogAttr && pLogAttr->pVptr && pLogAttr->pVptr->pLogRx)
+    {
+        return pLogAttr->pVptr->pLogRx(pLogAttr, pDat, len);
+    }
+
+    return -1;
+}
+
+int32_t LOGGetCh(LOG_ATTR_ST *pLogAttr)
+{
+    if(pLogAttr && pLogAttr->pVptr && pLogAttr->pVptr->pGetC)
+    {
+        return pLogAttr->pVptr->pGetC(pLogAttr);
+    }
+
+    return -1;
 }
 
 
