@@ -12,6 +12,9 @@ uint64_t GetRealTickNs(void);
 
 uint64_t GetMonotonicTickNs(void);
 
+uint64_t GetBootTickNs(void);
+
+
 uint16_t GetLibEmbeddedBCDVer(void); // BCD code
 
 

@@ -42,6 +42,19 @@ ATTRIBUTE_WEAK uint64_t GetMonotonicTickNs(void)
     return ns;
 }
 
+ATTRIBUTE_WEAK uint64_t GetBootTickNs(void)
+{
+    struct timespec ts;
+    uint64_t ns = 0;
+
+    clock_gettime(CLOCK_BOOTTIME, &ts);
+
+    ns = ts.tv_nsec + (uint64_t)ts.tv_sec * 1000000000;
+
+    return ns;
+}
+
+
 #elif defined(_WIN32)
 #include <Windows.h>
 
