@@ -196,6 +196,18 @@ typedef struct
     int32_t idx;
 }LIST_TST_ST;
 
+static int listNodeCmp(LIST_ST *pListNode1, LIST_ST *pListNode2)
+{
+    LIST_TST_ST *p1 = ST_CONTAINER_OF(pListNode1, LIST_TST_ST, list);
+    LIST_TST_ST *p2 = ST_CONTAINER_OF(pListNode2, LIST_TST_ST, list);
+
+    if(p1->idx > p2->idx)
+    {
+        return 1;
+    }
+    
+    return 0;
+}
 
 void ListTst(void)
 {
@@ -203,25 +215,19 @@ void ListTst(void)
     LIST_TST_ST *pNode = NULL, *pN = NULL;
     ListInit(&list);
 
-    for(int32_t i = 0; i < 10; i++)
+    for(int32_t i = 0; i < 20; i++)
     {
         LIST_TST_ST *pNew = MmMngrMalloc(sizeof(LIST_TST_ST));
-        pNew->idx = i;
+        pNew->idx = GetMonotonicTickNs() / 1000000 % 100;
         LIST_INSERT_BACK(&list, &pNew->list);
+        ThreadUsleep(2000);
     }
 
     LIST_FOREACH_FROM_HEAD(pNode, &list, list)
     {
-        LOGS("list idx = %d,", pNode->idx);
+        LOGS("list idx = %d\r\n", pNode->idx);
     }
-    LOGI("LIST_FOREACH_FROM_HEAD\r\n");
-
-    LIST_FOREACH_FROM_TAIL(pNode, &list, list)
-    {
-        LOGS("list idx = %d,", pNode->idx);
-    }
-    LOGI("LIST_FOREACH_FROM_TAIL\r\n");
-    
+    LOGI("*******************\r\n");
 
     LIST_TST_ST *p1, *p2;
     
@@ -245,9 +251,19 @@ void ListTst(void)
 
     LIST_FOREACH_FROM_HEAD(pNode, &list, list)
     {
-        LOGS("list idx = %d,", pNode->idx);
+        LOGS("list idx = %d\r\n", pNode->idx);
     }
-    LOGI("LIST_FOREACH_FROM_HEAD\r\n");
+    LOGI("LIST SWAP test done\r\n");
+    LOGI("*******************\r\n");
+
+    
+    ListSort(&list, listNodeCmp);
+
+    LIST_FOREACH_FROM_HEAD(pNode, &list, list)
+    {
+        LOGS("list idx = %d\r\n", pNode->idx);
+    }
+    LOGI("LIST sort test done\r\n");
 
     LIST_FOREACH_FROM_HEAD_SAFE(pNode, &list, pN, list)
     {
@@ -255,7 +271,6 @@ void ListTst(void)
         LOGS("delet %d\r\n", pNode->idx);
         MmMngrFree(pNode);
     }
-    
 }
 
 void mission(void *pArg)

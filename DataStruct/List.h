@@ -9,6 +9,8 @@ typedef struct __List
     struct __List *pNext;
 }LIST_ST;
 
+typedef int (*CMP_LIST_NODE_FT)(LIST_ST *pNode1, LIST_ST *pNode2);
+
 
 #ifdef __cplusplus
 extern "C" 
@@ -89,6 +91,49 @@ static inline void ListSwap(LIST_ST *pEntryA, LIST_ST *pEntryB)
     }
 }
 
+
+static inline void ListSplit(LIST_ST *pListHead, LIST_ST *pSplitNode, LIST_ST *pSplitList)
+{
+    pSplitList->pNext = pSplitNode->pNext;
+    pSplitList->pPrev = pListHead->pPrev;
+
+    pSplitNode->pNext->pPrev = pSplitList;
+    pListHead->pPrev->pNext = pSplitList;
+
+    pSplitNode->pNext = pListHead;
+    pListHead->pPrev = pSplitNode;
+}
+
+// splice pList into pHead
+static inline void ListSpliceFront(LIST_ST *pHead, LIST_ST *pList)
+{
+    LIST_ST *pFirst = pList->pNext;
+    LIST_ST *pLast = pList->pPrev;
+
+    LIST_ST *pAt = pHead->pNext;
+
+    pFirst->pPrev = pHead;
+    pHead->pNext = pFirst;
+
+    pLast->pNext = pAt;
+    pAt->pPrev = pLast;
+}
+
+static inline void ListSpliceBack(LIST_ST *pHead, LIST_ST *pList)
+{
+    LIST_ST *pFirst = pList->pNext;
+    LIST_ST *pLast = pList->pPrev;
+
+    LIST_ST *pAt = pHead->pPrev;
+
+    pFirst->pPrev = pAt;
+    pAt->pNext = pFirst;
+
+    pHead->pPrev = pLast;
+    pLast->pNext = pHead;
+}
+
+LIST_ST *ListSort(LIST_ST *pList, CMP_LIST_NODE_FT cmpFunc);
 
 #define LIST_INSERT_FRONT(entry, entryI)\
     ListInsertFront(entry, entryI)
