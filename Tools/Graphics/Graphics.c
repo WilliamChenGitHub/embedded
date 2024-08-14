@@ -23,6 +23,9 @@ static inline uint32_t colorCnv(CANVAS_ATTR_ST *pCanvas, GRAPHICS_PIX_UT pixColo
         
         case GRAPHICS_COLOR_FMT_ARGB1555:
         {
+            pix |= pixColor.argb.a ? 1 : 0;
+            pix <<= 1;
+
             pix = pixColor.argb.r & 0x1F;
             pix <<= 5;
             
@@ -30,9 +33,6 @@ static inline uint32_t colorCnv(CANVAS_ATTR_ST *pCanvas, GRAPHICS_PIX_UT pixColo
             pix <<= 5;
             
             pix |= pixColor.argb.b & 0x1F;
-            pix <<= 5;
-
-            pix |= pixColor.argb.a ? 1 : 0;
         }break;
 
         case GRAPHICS_COLOR_FMT_ARGB8888:
@@ -50,8 +50,7 @@ static inline uint32_t colorCnv(CANVAS_ATTR_ST *pCanvas, GRAPHICS_PIX_UT pixColo
         
         case GRAPHICS_COLOR_FMT_RGB888:
         {
-            pix = pixColor.data32;
-            pix &= 0x00FFFFFF;
+            pix = pixColor.data32 & 0x00FFFFFF;
         }break;
 
         default:
@@ -63,15 +62,14 @@ static inline uint32_t colorCnv(CANVAS_ATTR_ST *pCanvas, GRAPHICS_PIX_UT pixColo
     return pix;
 }
 
-void CanvasDrawPoint(CANVAS_ATTR_ST *pCanvas, GRAPHICS_POINT_ST *pt, GRAPHICS_PIX_UT pixColor)
+void CanvasDrawPoint(CANVAS_ATTR_ST *pCanvas, const GRAPHICS_POINT_ST *pt, GRAPHICS_PIX_UT pixColor)
 {
-    uint8_t *p = &pCanvas->canvas[pCanvas->canvasLineSz * pt->y + pt->x * pCanvas->pixSz];
-
     uint32_t pix = colorCnv(pCanvas, pixColor);
-    memcpy(p, &pix, pCanvas->pixSz);
+    memcpy(&CANVAS_PIX(pCanvas, pt->x, pt->y), &pix, pCanvas->pixSz);
 }
 
-void CanvasDrawLine(CANVAS_ATTR_ST *pCanvas, GRAPHICS_LINE_ST *pLine, GRAPHICS_PIX_UT pixColor)
+
+void CanvasDrawLine(CANVAS_ATTR_ST *pCanvas, const GRAPHICS_LINE_ST *pLine, GRAPHICS_PIX_UT pixColor)
 {
     GRAPHICS_POINT_ST p = {0};
 
@@ -120,7 +118,7 @@ void CanvasDrawLine(CANVAS_ATTR_ST *pCanvas, GRAPHICS_LINE_ST *pLine, GRAPHICS_P
     }
 }
 
-void CanvasDrawRect(CANVAS_ATTR_ST *pCanvas, GRAPHICS_RECT_ST *pRect, GRAPHICS_PIX_UT pixColor)
+void CanvasDrawRect(CANVAS_ATTR_ST *pCanvas, const GRAPHICS_RECT_ST *pRect, GRAPHICS_PIX_UT pixColor)
 {
     GRAPHICS_LINE_ST line[4] = {0};
 
@@ -202,8 +200,8 @@ CANVAS_ATTR_ST *CanvasCreate(int32_t w, int32_t h, GRAPHICS_COLOR_FMT_ET fmt)
 
     pCanvas->pixSz = pixSz;
     pCanvas->colorFmt = fmt;
-    pCanvas->canvasLineSz = pCanvas->w * pCanvas->pixSz;
-    pCanvas->canvasSz = pCanvas->canvasLineSz * pCanvas->h;
+    pCanvas->lineSz = pCanvas->w * pCanvas->pixSz;
+    pCanvas->canvasSz = pCanvas->lineSz * pCanvas->h;
 
     return pCanvas;
 err1:

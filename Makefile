@@ -77,7 +77,7 @@ AR := $(CROSS)ar
 INC_PATH += -I Common
 INC_PATH += -I Algorithm/ 
 INC_PATH += -I DataStruct/
-INC_PATH += -I Tools/Communication -I Tools/JSON -I Tools/ThreadPool -I Tools/TCPCliSer
+INC_PATH += -I Tools/Communication -I Tools/JSON -I Tools/ThreadPool -I Tools/TCPCliSer -I Tools/Graphics
 
 LIB_PATH += -L ./
 LIBS += -lc -lpthread
