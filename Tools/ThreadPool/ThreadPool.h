@@ -4,8 +4,8 @@
 #include "Thread.h"
 #include "List.h"
 
-#define MAX_WAITING_MISSIONS   1024 // number of waiting missions max value
-#define MAX_ACTIVE_THREADS    1000 // The number of threads that can run simultaneously
+#define MAX_WAITING_MISSIONS   10240 // number of waiting missions max value
+#define MAX_ACTIVE_THREADS    1024 // The number of threads that can run simultaneously
 
 
 typedef void (*THREAD_POOL_MISSION)(void *pArg);
@@ -42,8 +42,9 @@ int32_t ThreadPoolDispatchMission(THREAD_POOL_ST *pPool, THREAD_POOL_MISSION pMi
 
 void ThreadPoolDestory(THREAD_POOL_ST *pPool);
 
+int ThreadPoolGetWaitingMissions(THREAD_POOL_ST *pPool);
 
-
+int ThreadPoolGetRuningMissions(THREAD_POOL_ST *pPool);
 
 #ifdef __cplusplus
 }

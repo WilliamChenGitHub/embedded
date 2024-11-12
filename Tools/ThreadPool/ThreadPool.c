@@ -28,12 +28,14 @@ static void *threadCb(void *pArg)
         LIST_DELETE(&pMission->list);
         pPool->wMissions--;
         
+        pPool->rMissions++;
         MutexUnlock(pPool->mutex);
 
-
-        pPool->rMissions++;
         pMission->pMission(pMission->pArg);
+
+        MutexLock(pPool->mutex);
         pPool->rMissions--;
+        MutexUnlock(pPool->mutex);
         MmMngrFree(pMission);
     }
 
@@ -126,7 +128,7 @@ int32_t ThreadPoolDispatchMission(THREAD_POOL_ST *pPool, THREAD_POOL_MISSION pMi
 {
     if(MAX_WAITING_MISSIONS <= pPool->wMissions)
     {
-        LOGE("too many waiting missions\r\n");
+        LOGE("too many waiting missions = %d\r\n", pPool->wMissions);
         goto err1;
     }
 
@@ -185,4 +187,14 @@ void ThreadPoolDestory(THREAD_POOL_ST *pPool)
     MmMngrFree(pPool);
 }
 
+
+int ThreadPoolGetWaitingMissions(THREAD_POOL_ST *pPool)
+{
+    return pPool->wMissions;
+}
+
+int ThreadPoolGetRuningMissions(THREAD_POOL_ST *pPool)
+{
+    return pPool->rMissions;
+}
 

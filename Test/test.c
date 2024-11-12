@@ -3,6 +3,7 @@
 #include "ThreadPool.h"
 #include "MediaBuffer.h"
 #include "Graphics.h"
+#include "Thread.h"
 
 const unsigned char F6x8[][6] =		
 {
@@ -406,7 +407,7 @@ static void mediaBufTest(void)
     
     QUEUE_BUF_LIST_ST bufList[3] = {0};
     
-    MEDIA_BUFFER_ST *pMediaBuf = MediaBufCreate(1024 * 1024 * 10);
+    MEDIA_BUFFER_ST *pMediaBuf = MediaBufCreate(1024 * 1024 * 16);
     if(!pMediaBuf)
     {
         LOGE("media buff create failed\r\n");
@@ -496,7 +497,7 @@ static void canvasShow(CANVAS_ATTR_ST *pCanvas)
         {
             if(pCanvas->pixSz == 4)
             {
-                GRAPHICS_PIX_UT *p = (GRAPHICS_PIX_UT *)&pCanvas->canvas[pCanvas->canvasLineSz * y + x * pCanvas->pixSz];
+                GRAPHICS_PIX_UT *p = (GRAPHICS_PIX_UT *)&pCanvas->canvas[pCanvas->lineSz * y + x * pCanvas->pixSz];
 
                 if(p->argb.a)
                 {
@@ -619,6 +620,154 @@ static void canvasTest(void)
 }
 
 
+
+
+
+
+// message list test
+typedef struct
+{
+    LIST_ST list;
+    int msg;
+    int8_t data[0];
+}MSG_ATTR_ST;
+
+typedef struct
+{
+    LIST_ST msgList;
+    MUTEX_T lock;
+    EVENT_T event;
+    bool bDestory;
+    THREAD_T msgHdlTh;
+    int hdlCnt;
+    int sndCnt;
+}MSG_LIST_ATTR_ST;
+
+MSG_LIST_ATTR_ST gMessageListAttr = {0};
+
+int SendMsg(MSG_LIST_ATTR_ST *pListAttr, int msgType, void *pMsgData, int msgDataSz)
+{
+    MSG_ATTR_ST *pNewMsg = MmMngrMalloc(sizeof(*pNewMsg) + msgDataSz);
+
+    if(!pNewMsg)
+    {
+        LOGE("malloc new msg failed\r\n");
+        return -1;
+    }
+
+    pNewMsg->msg = msgType;
+    memcpy(pNewMsg->data, pMsgData, msgDataSz);
+    MutexLock(pListAttr->lock);
+    LIST_INSERT_FRONT(&pListAttr->msgList, &pNewMsg->list); // insert to msg list
+    pListAttr->sndCnt++;
+    MutexUnlock(pListAttr->lock);
+    
+    EventGeneration(pListAttr->event); // notify msg hdl thread
+
+    return 0;
+}
+
+
+
+static void * MsgHdl(void *pArg)
+{
+    MSG_LIST_ATTR_ST *pListAttr = (MSG_LIST_ATTR_ST *)pArg;
+    MSG_ATTR_ST *pMsgAttr = NULL, *pMsgNext = NULL;
+
+    while (1)
+    {
+        while(LIST_IS_EMPTY(&pListAttr->msgList) && !pListAttr->bDestory)
+        {
+            EventTimedWait(pListAttr->event, -1);
+        }
+        
+        MutexLock(pListAttr->lock);
+        if(!LIST_IS_EMPTY(&pListAttr->msgList))
+        {
+            pMsgAttr = LIST_NEXT_ENTRY(&pListAttr->msgList, typeof(*pMsgAttr), list);
+            LIST_DELETE(&pMsgAttr->list); // delete from list
+
+            //LOGI("msg = %d\r\n", pMsgAttr->msg);
+            
+            pListAttr->hdlCnt++;
+            MmMngrFree(pMsgAttr);
+            
+            MutexUnlock(pListAttr->lock);
+        }
+        else if(pListAttr->bDestory)
+        {
+            MutexUnlock(pListAttr->lock);
+            break;
+        }
+        else
+        {
+            MutexUnlock(pListAttr->lock);
+        }
+    }
+
+    //delet all msg
+    MutexLock(pListAttr->lock);
+    LIST_FOREACH_FROM_HEAD_SAFE(pMsgAttr, &pListAttr->msgList, pMsgNext, list)
+    {
+        LIST_DELETE(&pMsgAttr->list); // delete from list
+        LOGE("delet msg %d\r\n", pMsgAttr->msg);
+        MmMngrFree(pMsgAttr);
+    }
+    MutexUnlock(pListAttr->lock);
+    return NULL;
+}
+
+
+void sndMsgMission(void *pArg)
+{
+    int msg = (int)pArg;
+    SendMsg(&gMessageListAttr, msg, NULL, 0);
+}
+
+
+void MsgListTest(void)
+{
+    int sndCnt = 0;
+    ListInit(&gMessageListAttr.msgList);
+    gMessageListAttr.lock = MutexCreate();
+    gMessageListAttr.event = EventCreate();
+
+    gMessageListAttr.msgHdlTh = ThreadCreate(MsgHdl, &gMessageListAttr, 1024 * 3, false, 1, "messagehdl");
+
+
+    THREAD_POOL_ST *pTp = ThreadPoolCreate(10, 1024);
+
+    for(sndCnt = 0; sndCnt < 100000000; sndCnt++)
+    {
+        ThreadPoolDispatchMission(pTp, sndMsgMission, (void *)sndCnt);
+    }
+
+#if 0
+    while(ThreadPoolGetRuningMissions(pTp) || ThreadPoolGetWaitingMissions(pTp))
+    {
+        sleep(1);
+    }
+#endif
+
+    ThreadPoolDestory(pTp);
+
+    sleep(3);
+    gMessageListAttr.bDestory = true;
+    EventGeneration(gMessageListAttr.event);
+    ThreadJoin(gMessageListAttr.msgHdlTh);
+    
+    LOGI("msgHdl cnt = %d, sndCnt = %d\r\n", gMessageListAttr.hdlCnt, gMessageListAttr.sndCnt);
+
+    if(gMessageListAttr.hdlCnt != gMessageListAttr.sndCnt)
+    {
+        LOGE("snd cnt != hdl cnt\r\n");
+    }
+    
+    MutexDestroy(gMessageListAttr.lock);
+    EventDestroy(gMessageListAttr.event);
+}
+
+
 int main(int argc, char **argv)
 {
     (void) argc;
@@ -634,6 +783,8 @@ int main(int argc, char **argv)
     LOGI("info log\r\n");
     LOGE("error log\r\n");
     LOGW("warning log\r\n");
+
+    MsgListTest();
 
     int32_t i = 0;
     for(i = 0; i < 10; i++)
